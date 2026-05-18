@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# PostToolUse hook wrapper for Cursor — delegates to the Python implementation.
+# Cursor pipes JSON to stdin; the Python script reads it.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+exec python3 "${SCRIPT_DIR}/post-tool-trace.py"

@@ -5,6 +5,17 @@
       {
         "command": "./hooks/session-start"
       }
+    ],
+    "postToolUse": [
+      {
+        "event": "Bash",
+        "command": "./hooks/run-hook.cmd post-tool-trace"
+      }
+    ],
+    "stop": [
+      {
+        "command": "./hooks/run-hook.cmd stop-reflect"
+      }
     ]
   }
 }

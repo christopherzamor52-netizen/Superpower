@@ -337,16 +337,16 @@ def _should_evolve() -> tuple[bool, str]:
 def _run_evolution() -> str | None:
     """Run the evolution engine. Returns summary or None on failure."""
     try:
-        # Add project root to path so we can import src.core
+        # Add project root to path so we can import ace.core
         if ACE_ROOT:
             sys.path.insert(0, ACE_ROOT)
 
-        from src.core.evolution.trace import TraceStore, ExecutionTrace
-        from src.core.evolution.patterns import extract_all_patterns
-        from src.core.knowledge.manager import KnowledgeManager
-        from src.core.storage.file_storage import FileStorage
-        from src.core.memory.evolution_bridge import EvolutionBridge
-        from src.core.memory.manager import MemoryManager
+        from ace.core.evolution.trace import TraceStore, ExecutionTrace
+        from ace.core.evolution.patterns import extract_all_patterns
+        from ace.core.knowledge.manager import KnowledgeManager
+        from ace.core.storage.file_storage import FileStorage
+        from ace.core.memory.evolution_bridge import EvolutionBridge
+        from ace.core.memory.manager import MemoryManager
 
         store = TraceStore()
         state = _load_evolution_state()

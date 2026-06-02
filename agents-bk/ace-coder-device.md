@@ -59,7 +59,7 @@ from pathlib import Path
 ace_root = os.environ.get("ACE_ROOT", str(Path(__file__).parent.parent.parent.parent.parent.parent.parent))
 sys.path.insert(0, str(ace_root))
 
-from src.core.simulator.base import SimulatorDevice, OperationResult
+from ace.core.simulator.base import SimulatorDevice, OperationResult
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +110,7 @@ from pathlib import Path
 ace_root = os.environ.get("ACE_ROOT", str(Path(__file__).parent.parent.parent.parent.parent.parent.parent))
 sys.path.insert(0, str(ace_root))
 
-from src.core.devices.backend import BaseDeviceBackend
+from ace.core.devices.backend import BaseDeviceBackend
 
 logger = logging.getLogger(__name__)
 

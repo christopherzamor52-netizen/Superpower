@@ -118,7 +118,7 @@ def _load_recent_memories() -> str:
     """
     try:
         sys.path.insert(0, ACE_ROOT)
-        from src.core.memory.manager import MemoryManager
+        from ace.core.memory.manager import MemoryManager
 
         manager = MemoryManager()
 

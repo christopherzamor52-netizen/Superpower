@@ -103,8 +103,8 @@ def _extract_node_info(command: str) -> tuple[str | None, str | None]:
 def _load_memories_for_workflow(workflow_id: str) -> dict:
     """Load memories and insights for a workflow."""
     try:
-        from src.core.memory.manager import MemoryManager
-        from src.core.memory.insight_loader import InsightLoader
+        from ace.core.memory.manager import MemoryManager
+        from ace.core.memory.insight_loader import InsightLoader
 
         manager = MemoryManager()
         insights = InsightLoader()
@@ -158,8 +158,8 @@ def _load_memories_for_workflow(workflow_id: str) -> dict:
 def _load_memories_for_device(device_id: str, operation: str = "") -> dict:
     """Load memories and insights for a device."""
     try:
-        from src.core.memory.manager import MemoryManager
-        from src.core.memory.insight_loader import InsightLoader
+        from ace.core.memory.manager import MemoryManager
+        from ace.core.memory.insight_loader import InsightLoader
 
         manager = MemoryManager()
         insights = InsightLoader()
@@ -197,8 +197,8 @@ def _load_memories_for_device(device_id: str, operation: str = "") -> dict:
 def _load_memories_for_node(device_id: str | None, node_id: str | None) -> dict:
     """Load memories and insights for node building."""
     try:
-        from src.core.memory.manager import MemoryManager
-        from src.core.memory.insight_loader import InsightLoader
+        from ace.core.memory.manager import MemoryManager
+        from ace.core.memory.insight_loader import InsightLoader
 
         manager = MemoryManager()
         insights = InsightLoader()

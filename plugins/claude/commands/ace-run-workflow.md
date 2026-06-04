@@ -47,6 +47,28 @@ ace hub pull <sim_id> --type simulator
 ace workflow run <workflow_id> [--input params.json]
 ```
 
+**前端实时监控（可选）**
+
+执行工作流时，CLI 会自动检测前端开发服务器是否运行。如果已启动，会输出实时监控页面地址：
+
+```
+📊 实时监控: http://localhost:5173/workflow-run/<run-id>
+```
+
+在浏览器中打开该链接，可以查看：
+- 实时 Timeline 时间轴（每个节点的执行状态）
+- AI 生成的节点执行总结
+- 结果数据的可视化（图像、文本、JSON）
+- 执行完成后的报告视图
+
+启动前端开发服务器：
+```bash
+ace frontend dev       # 默认端口 5173
+ace frontend dev --port 5174
+ace frontend status    # 检查状态
+ace frontend stop      # 停止服务
+```
+
 ### Build a Workflow from Description
 ```bash
 ace workflow build "<description>" [--device <device_type>]

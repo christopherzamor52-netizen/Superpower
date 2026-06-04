@@ -1,19 +1,30 @@
 ---
-description: ACE Paradigm 3 - Develop ACE framework using superpowers
+description: ACE Paradigm 3 - Develop ACE framework using ace plugin skills
 ---
 # ACE P3 - ACE Development
 
-Improve ACE framework using official superpowers skills with evolution闭环.
+Improve ACE framework using official ace plugin skills with evolution闭环.
 
 ## Usage
 
-This command invokes the `ace-development` skill from the ace plugin.
+```
+/ace:development
+```
+
+This command invokes the `ace-development` skill.
 
 ## ACE CLI Commands (Recommended)
 
 ### List Nodes
 ```bash
-ace node list [--device <device_id>]
+ace node list --source local              # local only (default)
+ace node list --source all [--device <device_id>]
+```
+
+### Pull from ace-hub (if nodes not found)
+```bash
+ace hub list --type nodes
+ace hub pull <node_id> --type node
 ```
 
 ### Show Node Details

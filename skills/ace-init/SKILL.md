@@ -9,7 +9,7 @@ Install ACE's CLAUDE.md into the current project directory with docs paths conve
 
 ## When to Use
 
-- User runs `/ace-init` command
+- User runs `/ace:init` command
 - Setting up a new project to use ACE
 - Need CLAUDE.md with working documentation links
 

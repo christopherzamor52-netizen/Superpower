@@ -11,31 +11,39 @@ Build, compose, and execute workflows using existing device abstractions.
 
 ## Usage
 
-This command invokes the `ace-run-workflow` skill from the ace plugin.
-
-## Test-First Node Building
-
-```bash
-# Step 1: Write test for the node
-ace node test --create <node-id>_test.py --description "operation"
-
-# Step 2: Build the node
-ace node build --device <device-id> --description "operation"
-
-# Step 3: Run test to verify
-ace sandbox test <node-id>_test.py
 ```
+/ace:run-workflow
+```
+
+This command invokes the `ace-run-workflow` skill.
 
 ## ACE CLI Commands (Recommended)
 
-### List Devices
+### List Local Devices
 ```bash
-ace device list
+ace device list              # local only (default)
+ace device list --source all # include hub-synced
 ```
 
 ### List Workflows
 ```bash
-ace workflow list
+ace workflow list              # local only (default)
+ace workflow list --source all # include hub-synced
+```
+
+### Pull from ace-hub (if not found locally)
+```bash
+ace hub list --type devices    # see available devices
+ace hub pull <device_id> --type device
+
+ace hub list --type workflows  # see available workflows
+ace hub pull <workflow_id> --type workflow
+
+ace hub list --type nodes      # see available nodes
+ace hub pull <node_id> --type node
+
+ace hub list --type simulators # see available simulators
+ace hub pull <sim_id> --type simulator
 ```
 
 ### Run a Workflow
@@ -62,7 +70,7 @@ ace workflow validate <workflow_id>
 
 1. Clarify intent (build new? run existing? modify?)
 2. For "run": search → confirm with user → execute
-3. For "build": design → check nodes → **test-first for new nodes** → compose → validate
+3. For "build": design → check nodes → **TDD for new nodes** → compose → validate
 4. Execute with traces
 5. Evolution闭环
 

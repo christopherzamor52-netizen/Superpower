@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install ace-superpowers in dev mode (symlinks)
+# Install ace plugin in dev mode (symlinks)
 
 set -e
 
@@ -22,7 +22,7 @@ if [ "$IDE" = "auto" ]; then
   IDE=$(detect_ide)
 fi
 
-echo "Installing ace-superpowers in DEV mode for IDE: $IDE"
+echo "Installing ace plugin in DEV mode for IDE: $IDE"
 
 case $IDE in
   claude)

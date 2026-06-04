@@ -94,12 +94,12 @@ def check_ace_health() -> str | None:
     if not ACE_ROOT:
         return (
             "[ACE] WARNING: CLAUDE_PROJECT_DIR not set — tracing disabled. "
-            "Run /ace-init to set up."
+            "Run /ace:init to set up."
         )
     if not ACE_DIR or not ACE_DIR.exists():
         return (
             f"[ACE] WARNING: {ACE_DIR} not found — tracing disabled. "
-            "Run /ace-init to initialize."
+            "Run /ace:init to initialize."
         )
     return None
 

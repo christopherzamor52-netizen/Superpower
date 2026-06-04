@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install ace-superpowers plugin for detected IDE
+# Install ace plugin for detected IDE
 
 set -e
 
@@ -22,7 +22,8 @@ if [ "$IDE" = "auto" ]; then
   IDE=$(detect_ide)
 fi
 
-echo "Installing ace-superpowers for IDE: $IDE"
+echo "Installing ace plugin project commands for IDE: $IDE"
+echo "Note: Prefer Claude/Cursor marketplace install for /ace:* commands (e.g. /add-plugin ace)"
 
 case $IDE in
   claude)

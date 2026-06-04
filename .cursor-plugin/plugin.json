@@ -1,6 +1,6 @@
 {
-  "name": "ace-superpowers",
-  "displayName": "ACE Superpowers",
+  "name": "ace",
+  "displayName": "ACE",
   "description": "ACE three paradigms + superpowers skills for scientific instrument automation",
   "version": "0.3.0",
   "author": {

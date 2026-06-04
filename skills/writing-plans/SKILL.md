@@ -124,7 +124,7 @@ This structure informs the task decomposition. Each task should produce self-con
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use ace:subagent-driven-development (recommended) or ace:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -140,7 +140,7 @@ This structure informs the task decomposition. Each task should produce self-con
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use ace:subagent-driven-development (recommended) or ace:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -305,11 +305,11 @@ git commit -m "feat(<device>): add connect node"
 
 **Task:** Implement `<feature>` in ACE core
 
-**Pre-requisite:** Invoke `superpowers:test-driven-development` skill
+**Pre-requisite:** Invoke `ace:test-driven-development` skill
 
 - [ ] **Step 1: Invoke TDD skill (RED phase)**
 
-Skill: `superpowers:test-driven-development`
+Skill: `ace:test-driven-development`
 Prompt: "Write failing test for <feature> in src/core/<module>.py"
 
 - [ ] **Step 2: Verify test fails**
@@ -403,15 +403,15 @@ After saving the plan, offer execution choice:
 **Which approach?"**
 
 **If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
+- **REQUIRED SUB-SKILL:** Use ace:subagent-driven-development
 - Fresh subagent per task + two-stage review
 
 **If Inline Execution chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
+- **REQUIRED SUB-SKILL:** Use ace:executing-plans
 - Batch execution with checkpoints for review
 
 **For ACE P3 projects:**
 - Execution MUST use superpowers chain
-- Invoke `superpowers:test-driven-development` before implementation
-- Invoke `superpowers:verification-before-completion` after execution
-- Invoke `superpowers:finishing-a-development-branch` at completion
+- Invoke `ace:test-driven-development` before implementation
+- Invoke `ace:verification-before-completion` after execution
+- Invoke `ace:finishing-a-development-branch` at completion

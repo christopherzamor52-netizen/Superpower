@@ -8,13 +8,25 @@ TDD required: Write test → Build node → Verify test passes → Validate with
 
 ## Usage
 
-This command invokes the `ace-device-onboarding` skill from the ace plugin.
+```
+/ace:device-onboarding
+```
+
+This command invokes the `ace-device-onboarding` skill.
 
 ## ACE CLI Commands (Recommended)
 
-### List Existing Devices
+### Check ace-hub First (Before Creating New Device)
 ```bash
-ace device list
+# See what's available in hub
+ace hub list --type devices
+
+# Pull existing device
+ace hub pull <device_id> --type device
+
+# Check local devices
+ace device list              # local only (default)
+ace device list --source all # include hub-synced
 ```
 
 ### View Device Details

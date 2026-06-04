@@ -83,7 +83,7 @@ def init_ace():
     print(f"   ACE root: {ace_root}")
     print("")
     print("You can now use ACE in this project.")
-    print("Run '/ace-run-workflow', '/ace-device-onboarding', or '/ace-development' to get started.")
+    print("Run '/ace:run-workflow', '/ace:device-onboarding', or '/ace:development' to get started.")
 
 
 if __name__ == '__main__':

@@ -119,7 +119,7 @@ Fix failures before marking Phase 5 complete.
 **Before invoking ace-evolve**, write `CLAUDE_BENCHMARK_STATUS.md` in workspace root:
   - Files created, commands run, how to reproduce, Phase-1 answers (verbatim).
 
-**Then invoke `superpowers:ace-evolve`** for LLM-driven evolution闭环.
+**Then invoke `ace:ace-evolve`** for LLM-driven evolution闭环.
 
 The `ace-evolve` skill will:
 1. Gather context (traces, `CLAUDE_BENCHMARK_STATUS.md` Known Quirks, existing insights)

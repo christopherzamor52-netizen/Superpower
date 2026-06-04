@@ -27,7 +27,7 @@ allowed_tools:
    - 工作流编排模板
    - 验证与回归清单
 3. 明确哪些内容值得沉淀到知识库或命令规范
-4. 可通过 `/ace-insight` 和 `/ace-evolve` 相关命令落地
+4. 可通过 `/ace-insight` 和 `/ace:evolve` 相关命令落地
 
 ## Skills / Tools 分配
 

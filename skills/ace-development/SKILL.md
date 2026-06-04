@@ -21,7 +21,7 @@ Improve ACE framework using official superpowers skills, with ACE evolution闭�
 - No plan exists (`docs/superpowers/plans/*.md` not found)
 - User says "implement X" without prior brainstorming
 
-**If no spec/plan exists → STOP and invoke `superpowers:brainstorming` first.**
+**If no spec/plan exists → STOP and invoke `ace:brainstorming` first.**
 
 ## Anti-Pattern: "Skip Design and Start Coding"
 
@@ -37,7 +37,7 @@ Every ACE framework change requires full Clarify → Design → Plan → Execute
 
 2. **If NO spec exists:**
    - **STOP immediately**
-   - **Invoke `superpowers:brainstorming`**
+   - **Invoke `ace:brainstorming`**
    - Wait for user approval on design
    - Then continue to writing-plans
 
@@ -47,7 +47,7 @@ Every ACE framework change requires full Clarify → Design → Plan → Execute
    - Then continue
 
 4. **If spec exists and approved:**
-   - Proceed to `superpowers:writing-plans`
+   - Proceed to `ace:writing-plans`
 
 **Never write framework code without prior brainstorming.**
 
@@ -56,15 +56,15 @@ Every ACE framework change requires full Clarify → Design → Plan → Execute
 You MUST create a task for each of these items and complete them in order:
 
 1. **Clarify improvement goal** — what part of ACE, constraints, breaking changes
-2. **Invoke superpowers:brainstorming** — explore context, propose 2-3 approaches
+2. **Invoke ace:brainstorming** — explore context, propose 2-3 approaches
 3. **Get user approval on design** — wait for explicit confirmation
 4. **Write design spec** — `docs/superpowers/specs/YYYY-MM-DD-<feature>-design.md`
-5. **Invoke superpowers:writing-plans** — create implementation plan
-6. **Invoke superpowers:test-driven-development** — RED: test → GREEN: code → REFACTOR: clean
-7. **Execute plan** — invoke `superpowers:executing-plans` or `superpowers:subagent-driven-development`
-8. **Invoke superpowers:verification-before-completion** — all tests pass, no regressions
-9. **Invoke superpowers:ace-evolve** — LLM-driven evolution闭环 for framework insights
-10. **Invoke superpowers:finishing-a-development-branch** — merge/PR/cleanup
+5. **Invoke ace:writing-plans** — create implementation plan
+6. **Invoke ace:test-driven-development** — RED: test → GREEN: code → REFACTOR: clean
+7. **Execute plan** — invoke `ace:executing-plans` or `ace:subagent-driven-development`
+8. **Invoke ace:verification-before-completion** — all tests pass, no regressions
+9. **Invoke ace:ace-evolve** — LLM-driven evolution闭环 for framework insights
+10. **Invoke ace:finishing-a-development-branch** — merge/PR/cleanup
 
 ## Process Flow
 
@@ -112,7 +112,7 @@ Understand development goals:
 
 ### Phase 2: Design (Superpowers)
 
-**Invoke superpowers:brainstorming**
+**Invoke ace:brainstorming**
 - Explore project context (ACE codebase)
 - Ask clarifying questions
 - Propose 2-3 approaches
@@ -122,7 +122,7 @@ Understand development goals:
 
 ### Phase 3: Plan (Superpowers)
 
-**Invoke superpowers:writing-plans**
+**Invoke ace:writing-plans**
 - Create implementation plan
 - Bite-sized tasks (2-5 min each)
 - Exact file paths, complete code, test commands
@@ -130,7 +130,7 @@ Understand development goals:
 
 ### Phase 4: Execute with TDD (Superpowers)
 
-**CRITICAL: Invoke superpowers:test-driven-development FIRST**
+**CRITICAL: Invoke ace:test-driven-development FIRST**
 
 Follow the RED-GREEN-REFACTOR cycle for all code changes:
 
@@ -163,7 +163,7 @@ ace sandbox test <test_pattern>
 - Improve names and structure
 - Run tests after each change
 
-**Then: superpowers:executing-plans OR superpowers:subagent-driven-development**
+**Then: ace:executing-plans OR ace:subagent-driven-development**
 - Execute remaining tasks from plan
 - Follow exact steps
 - Run verifications
@@ -171,14 +171,14 @@ ace sandbox test <test_pattern>
 
 ### Phase 5: Verify (Superpowers)
 
-**Invoke superpowers:verification-before-completion**
+**Invoke ace:verification-before-completion**
 - Run all tests
 - Verify implementation matches spec
 - Confirm no regressions
 
 ### Phase 6: Evolution闭环 (ACE)
 
-**Invoke `superpowers:ace-evolve`** for LLM-driven evolution闭环.
+**Invoke `ace:ace-evolve`** for LLM-driven evolution闭环.
 
 The `ace-evolve` skill will:
 1. Gather context (traces from `~/.ace/traces/`, known quirks, existing insights, recent changes)
@@ -189,7 +189,7 @@ The `ace-evolve` skill will:
 
 ### Phase 7: Complete (Superpowers)
 
-**Invoke superpowers:finishing-a-development-branch**
+**Invoke ace:finishing-a-development-branch**
 - Verify tests pass
 - Present merge options
 - Execute user choice
@@ -200,7 +200,7 @@ The `ace-evolve` skill will:
 - Plans: docs/superpowers/plans/YYYY-MM-DD-<feature>-plan.md
 - Traces: ~/.ace/traces/ (auto-generated)
 - Insights: ~/.ace/insights/ (auto-generated)
-- Evolution: Invoke `superpowers:ace-evolve` after completion for LLM-driven evolution
+- Evolution: Invoke `ace:ace-evolve` after completion for LLM-driven evolution
 
 ## Key Principles
 
@@ -213,18 +213,18 @@ The `ace-evolve` skill will:
 **From ACE:**
 - ACE evolution for learning from development traces
 - Both frameworks complement each other
-- Invoke `superpowers:ace-evolve` after development for LLM-driven evolution闭环
+- Invoke `ace:ace-evolve` after development for LLM-driven evolution闭环
 
 ## Canonical Statements
 
 - "Developing ACE framework using superpowers with evolution闭环..."
-- "Design phase: invoking superpowers:brainstorming..."
-- "TDD phase: invoking superpowers:test-driven-development..."
+- "Design phase: invoking ace:brainstorming..."
+- "TDD phase: invoking ace:test-driven-development..."
 - "RED: Writing failing test first..."
 - "GREEN: Writing minimal code to pass..."
 - "REFACTOR: Cleaning up while tests stay green..."
-- "Execution phase: invoking superpowers:executing-plans..."
-- "Evolution phase: invoking superpowers:ace-evolve for LLM-driven evolution..."
+- "Execution phase: invoking ace:executing-plans..."
+- "Evolution phase: invoking ace:ace-evolve for LLM-driven evolution..."
 - "Evolution phase: gathering traces, quirks, and context for analysis..."
 
 ## TDD Red Flags - STOP and Delete Code

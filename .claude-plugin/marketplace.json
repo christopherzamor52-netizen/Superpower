@@ -1,5 +1,5 @@
 {
-  "name": "ace-superpowers",
+  "name": "ace",
   "description": "ACE plugin with three paradigms + superpowers skills for scientific instrument development",
   "owner": {
     "name": "Liu Peng",
@@ -7,7 +7,7 @@
   },
   "plugins": [
     {
-      "name": "ace-superpowers",
+      "name": "ace",
       "description": "ACE three paradigms (Run Workflow, Device Onboarding, Development) + superpowers skills",
       "version": "0.3.0",
       "source": "./",

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install ace plugin for detected IDE
+# Install ace plugin for detected IDE (legacy project-local copy — prefer marketplace)
 
 set -e
 
@@ -22,14 +22,16 @@ if [ "$IDE" = "auto" ]; then
   IDE=$(detect_ide)
 fi
 
-echo "Installing ace plugin project commands for IDE: $IDE"
-echo "Note: Prefer Claude/Cursor marketplace install for /ace:* commands (e.g. /add-plugin ace)"
+echo "ace plugin: use marketplace install for /ace:* commands"
+echo "  Claude Code: claude plugin install ace@ace  then /reload-plugins"
+echo "  Cursor: /add-plugin ace"
+echo ""
+echo "Skipping legacy copy to .claude/commands (would duplicate /ace:init as /ace-init)."
+echo "OpenCode-only path still copies plugins/opencode/commands/ if needed."
 
 case $IDE in
-  claude)
-    mkdir -p .claude/commands
-    cp "$SCRIPT_DIR/plugins/claude/commands/"*.md .claude/commands/
-    echo "Installed to .claude/commands/"
+  claude|cursor)
+    echo "Nothing to copy for IDE: $IDE"
     ;;
   opencode)
     mkdir -p .opencode/commands

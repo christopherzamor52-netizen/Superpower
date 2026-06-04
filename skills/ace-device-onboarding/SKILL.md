@@ -1,6 +1,7 @@
 ---
 name: ace-device-onboarding
 description: "Use when onboarding new hardware devices to ACE with device definitions, simulators, nodes, and ace-hub sharing. Enforces Clarify → Design → Plan → Execute → Verify → Share."
+user-invocable: false
 ---
 
 # ACE Paradigm 2 — Device & Simulator Onboarding

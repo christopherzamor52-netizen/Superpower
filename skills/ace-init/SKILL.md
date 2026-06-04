@@ -1,6 +1,7 @@
 ---
 name: ace-init
 description: "Initialize ACE in current project by installing CLAUDE.md with proper absolute paths"
+user-invocable: false
 ---
 
 # ACE Init - Initialize ACE in Current Project

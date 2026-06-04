@@ -1,6 +1,7 @@
 ---
 name: ace-run-workflow
 description: "ACE Paradigm 1: Build and run workflows on existing devices. Enforces Clarify → Design → Plan → Execute → Verify → Share."
+user-invocable: false
 ---
 
 # ACE Paradigm 1 — Run / Build Workflow

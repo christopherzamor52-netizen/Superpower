@@ -1,6 +1,7 @@
 ---
 name: ace-development
 description: "Use when improving ACE framework core, adding commands, or enhancing node/workflow framework"
+user-invocable: false
 ---
 
 # ACE Paradigm 3 - ACE Development

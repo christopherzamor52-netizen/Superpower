@@ -1,6 +1,7 @@
 ---
 name: ace-evolve
 description: "LLM-driven evolution闭环 — gather multi-source context, analyze traces + known quirks, distill insights through L1→L4, update CLAUDE.md and entity memories"
+user-invocable: false
 ---
 
 # ACE Evolution — LLM-Driven Learning Loop

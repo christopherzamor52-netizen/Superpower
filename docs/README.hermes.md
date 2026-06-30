@@ -17,10 +17,12 @@ touching code, and all other skills in `skills/`.
 
 ## How it works
 
-The plugin injects the `using-superpowers` bootstrap as a user-role
-message via the `on_session_start` hook. Skills are registered from
-the bundled `skills/` directory and are discoverable in Hermes's
-native agentskills.io catalog.
+The plugin registers an `on_session_start` hook with the Hermes plugin API.
+At the start of each session, the hook injects the `using-superpowers` bootstrap
+as a user-role message via `ctx.inject_message(role="user")`. A session-id guard
+prevents double-injection if the hook fires more than once per session.
+
+Skills are loaded on demand during the session using `skill_view("skill-name")`.
 
 ## Verifying
 

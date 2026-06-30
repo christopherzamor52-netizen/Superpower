@@ -24,13 +24,22 @@ When a skill mentions "your instructions file," on Hermes Agent this is **`AGENT
 
 ## Invoking a skill
 
-Hermes Agent has a native `skill_view` mechanism for loading skills. When a Superpowers instruction says to invoke a skill, use:
+Hermes Agent has a `skills` toolset with `skill_view` and `skills_list` tools.
+To invoke a superpowers skill, use:
 
 ```
-skill_view("skill-name")
+skill_view("brainstorming")
+skill_view("test-driven-development")
 ```
 
-This is the blessed skill-loading mechanism on Hermes Agent. You do not need to manually read `SKILL.md` files — `skill_view` handles skill discovery and loading natively.
+If `skill_view` cannot find a superpowers skill (it may not appear in the catalog
+until the plugin fully registers it), fall back to reading the SKILL.md directly:
+
+```
+read_file(path="~/.hermes/plugins/superpowers/skills/<skill-name>/SKILL.md")
+```
+
+This fallback is the same mechanism used by other harnesses without native skill loading.
 
 ## Subagent dispatch
 

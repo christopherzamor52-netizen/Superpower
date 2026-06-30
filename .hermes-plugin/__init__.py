@@ -77,4 +77,15 @@ def _get_bootstrap() -> Optional[str]:
 
 
 def register(ctx):
-    pass
+    def on_session_start(**kwargs):
+        global _last_session_id
+        session_id = kwargs.get("session_id")
+        if session_id is not None and session_id == _last_session_id:
+            return
+        bootstrap = _get_bootstrap()
+        if bootstrap is None:
+            return
+        ctx.inject_message(bootstrap, role="user")
+        _last_session_id = session_id
+
+    ctx.register_hook("on_session_start", on_session_start)

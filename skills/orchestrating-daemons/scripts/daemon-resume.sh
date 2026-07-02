@@ -48,24 +48,54 @@ args=( --bg --resume "$cur" --permission-mode auto -n "$name" )
 [ -n "$model" ] && args+=( --model "$model" )
 args+=( "$msg" )
 
-banner="$(cd "$cwd" && claude "${args[@]}" </dev/null 2>&1 | _strip_ansi)"
-newshort="$(printf '%s\n' "$banner" | sed -n 's/.*backgrounded · \([0-9a-f][0-9a-f]*\).*/\1/p' | head -1)"
+# Fork the new native bg agent. Capture the banner WITHOUT tripping `set -e`: a
+# nonzero fork exit (e.g. the session is not resumable) MUST fall through to the
+# error handler below rather than kill the script on this assignment — otherwise
+# the meta is stranded status=working with `current` still on the old (stopped)
+# turn. A nonzero exit AND a banner with no parseable short id both land in the
+# same error path.
+newshort=""
+if banner="$(cd "$cwd" && claude "${args[@]}" </dev/null 2>&1 | _strip_ansi)"; then
+  newshort="$(printf '%s\n' "$banner" | sed -n 's/.*backgrounded · \([0-9a-f][0-9a-f]*\).*/\1/p' | head -1)"
+fi
 if [ -z "$newshort" ]; then
   _meta_set "$uuid" status "error" updated "$(_now)"
-  echo "resume failed — could not parse background id from:" >&2
+  echo "resume failed — fork did not launch or produced no background id:" >&2
   echo "$banner" >&2
   exit 1
 fi
 
-# Wait for the forked turn to finish; capture the new UUID and state. The cwd is
-# fixed at spawn (the worktree path, if any) and never changes across turns.
-read -r newuuid state _ < <(_poll_until_done "$newshort" "$((DAEMON_TIMEOUT / 2))") || true
-if [ -z "$newuuid" ]; then
-  _meta_set "$uuid" status "error" short "$newshort" updated "$(_now)"
-  echo "resume: forked agent $newshort never appeared in 'claude agents'" >&2
+# Wait for the forked turn to finish, PRESERVING the watcher's exit status so we
+# can tell a terminal turn (rc 0) from a timeout (rc != 0). Parse via parameter
+# expansion, not word-splitting: the watcher's timeout line can lead with an
+# empty uuid field, and `read` would collapse that leading space and mistake the
+# state token for the uuid. The cwd is fixed at spawn and never changes.
+poll_rc=0
+poll_out="$(_poll_until_done "$newshort" "$((DAEMON_TIMEOUT / 2))")" || poll_rc=$?
+newuuid="${poll_out%% *}"; state="${poll_out#* }"; state="${state%% *}"
+
+if [ "$poll_rc" -ne 0 ]; then
+  # Watcher expired before the turn reached a terminal state.
+  if [ -n "$newuuid" ]; then
+    # The fork DID launch and is still running — record that truth: advance the
+    # chain to the new turn and mark status=working. Do NOT write the reply file
+    # or bump turns; no final reply has landed. daemon-reply.sh reads the CURRENT
+    # session's transcript, so it will surface the reply once the turn finishes.
+    _meta_set "$uuid" current "$newuuid" short "$newshort" status "working" updated "$(_now)"
+    echo "resume: watcher expired after $((DAEMON_TIMEOUT / 2)) polls; forked turn $newshort ($newuuid) is still running (status=working)." >&2
+    echo "        run daemon-reply.sh $uuid once it lands to read the reply." >&2
+  else
+    # Timed out with NO uuid: the forked agent never appeared in `claude agents`.
+    # Keep `short`/`current` on the previous (consistent) session so daemon-reply
+    # never reads a half-existent turn; stash the parsed short as `pending_short`
+    # so the new turn stays recoverable by hand.
+    _meta_set "$uuid" status "error" pending_short "$newshort" updated "$(_now)"
+    echo "resume: forked agent $newshort never appeared in 'claude agents'; kept previous current (recover via meta pending_short)." >&2
+  fi
   exit 1
 fi
 
+# Terminal state — the turn produced a final reply. Record it and finalize.
 status="idle"; [ "$state" = "blocked" ] && status="blocked"; [ "$state" = "error" ] && status="error"
 
 # Reply file stays keyed by the ORIGINAL uuid; read the reply from the new turn.

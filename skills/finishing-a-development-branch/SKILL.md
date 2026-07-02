@@ -9,7 +9,7 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 Guide completion of development work by presenting clear options and handling chosen workflow.
 
-**Core principle:** Verify tests → Detect environment → Present options → Execute choice → Clean up.
+**Core principle:** Verify tests → Write retrospective → Detect environment → Present options → Execute choice → Clean up.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
@@ -35,7 +35,7 @@ Cannot proceed with merge/PR until tests pass.
 
 Stop. Don't proceed to Step 2.
 
-**If tests pass:** Continue to Step 2.
+**If tests pass:** Write the spec's `## Outcomes & Retrospective` entry — what was achieved against the spec's original purpose, gaps, lessons learned (superpowers:living-specs) — replacing its "Pending — written at finish." line, and commit it so the retrospective rides the branch into the merge. Then continue to Step 2.
 
 ### Step 2: Detect Environment
 

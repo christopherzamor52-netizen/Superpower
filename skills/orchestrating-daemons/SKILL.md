@@ -13,12 +13,12 @@ A **daemon** is a durable background `claude` session, spawned with `claude --bg
 
 ## The loop
 
-`daemon-spawn.sh` and `daemon-resume.sh` both block until the daemon's turn finishes. Run each in a **background shell** (Claude Code: the Bash tool with `run_in_background: true`) so the wait never ties up your main loop — the shell's exit re-invokes you with the daemon's reply.
+`daemon-spawn.sh` and `daemon-resume.sh` both block until the daemon's turn finishes. Never run them in the foreground. If your harness has a **Monitor** tool (streams a command's stdout into the conversation as events), run each turn under it — the scripts print the full reply on stdout when the turn ends, so the reply lands in your context with no read step. Otherwise run each in a **background shell** (Claude Code: the Bash tool with `run_in_background: true`) and Read the output file when its completion notification arrives.
 
-1. **Spawn** each task: `scripts/daemon-spawn.sh "<name>" "<task>" [cwd] [worktree]` in a background shell — pass a worktree name for any code-writing daemon (see *Isolating code daemons*).
-2. **Read** the reply — it's the `--- reply ---` block in the shell output, or `scripts/daemon-reply.sh <id>`.
+1. **Spawn** each task: `scripts/daemon-spawn.sh "<name>" "<task>" [cwd] [worktree]` under a Monitor / background shell — pass a worktree name for any code-writing daemon (see *Isolating code daemons*).
+2. **Read** the reply — it's the `--- reply ---` block in the turn output (delivered as a Monitor event, or via Read on the background shell's output file; `scripts/daemon-reply.sh <id>` re-prints it any time).
 3. **Judge** it with the rubric below.
-4. **Resume** with your answer: `scripts/daemon-resume.sh <uuid> "<message>"` in a background shell. Or, if you queued it, `scripts/daemon-mark.sh <uuid> awaiting-human "<why>"`.
+4. **Resume** with your answer: `scripts/daemon-resume.sh <uuid> "<message>"` under a Monitor / background shell. Or, if you queued it, `scripts/daemon-mark.sh <uuid> awaiting-human "<why>"`.
 5. **Track**: `scripts/daemon-list.sh` is your fleet view — show it when the human asks "what's running". Retire finished daemons with `scripts/daemon-retire.sh <uuid>`.
 
 ## Toolkit
@@ -73,5 +73,5 @@ A daemon also goes `blocked` when it calls **AskUserQuestion** — headless, nob
 
 - **`-p --resume`-ing a live `--bg` daemon directly** — it's refused (*"currently running as a background agent"*). `daemon-resume.sh` runs `claude stop` first to release the ownership lock, then resumes in place. Never hand-roll this. And `--bg --resume` would *fork* a new id — never use it to continue.
 - **Resuming from the wrong directory** — `claude --resume` is scoped to the daemon's cwd/project. The scripts record and restore cwd; hand-rolled resumes fail with "No conversation found".
-- **Running a daemon turn in the foreground** — it blocks your main loop for the whole turn. Always launch spawn/resume in a background shell.
+- **Running a daemon turn in the foreground** — it blocks your main loop for the whole turn. Always launch spawn/resume under a Monitor or in a background shell.
 - **Waking the human for scope or "should I do more?" questions** — those are yours to answer. Queue the taste/approval forks; wake only for the last row of the rubric.

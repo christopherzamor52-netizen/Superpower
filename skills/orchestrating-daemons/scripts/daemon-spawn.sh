@@ -5,9 +5,10 @@
 # visible in `claude agents`, that survives this orchestrator ending. Runs its
 # FIRST turn, waits for it to finish, and records the reply.
 #
-# LAUNCH THIS IN A BACKGROUND SHELL (Bash run_in_background: true): it blocks
-# while polling for the first turn to complete, then exits — the shell's exit
-# re-invokes you with the reply preview.
+# NEVER RUN THIS IN THE FOREGROUND: it blocks while polling for the first turn
+# to complete, prints the reply, then exits. Run it under a Monitor (the reply
+# streams into context as an event — no read step) or a background shell (Bash
+# run_in_background: true; Read the output file when it completes).
 #
 #   name       short display name (shown in `claude agents` and resume picker)
 #   task       the initial prompt / task text

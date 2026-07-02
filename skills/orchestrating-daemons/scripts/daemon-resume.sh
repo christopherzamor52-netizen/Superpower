@@ -7,9 +7,10 @@
 # off to a foreground `-p --resume`. Same session id, no fork; the session stays
 # in `claude agents --all` history and resumable by the human.
 #
-# LAUNCH THIS IN A BACKGROUND SHELL (Bash run_in_background: true) so the blocking
-# turn doesn't tie up the orchestrator — the shell's exit re-invokes you with the
-# reply. Resume is scoped to the daemon's cwd, which this script restores.
+# NEVER RUN THIS IN THE FOREGROUND — the blocking turn would tie up the
+# orchestrator. Run it under a Monitor (the reply streams into context as an
+# event — no read step) or a background shell (Bash run_in_background: true).
+# Resume is scoped to the daemon's cwd, which this script restores.
 
 set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

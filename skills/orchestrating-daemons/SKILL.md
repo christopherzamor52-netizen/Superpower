@@ -9,6 +9,8 @@ description: Use when you need to spawn, track, and autonomously drive several d
 
 A **daemon** is a durable background `claude` session, spawned with `claude --bg` so it runs as its own process, is visible in `claude agents`, and survives this session ending. You are the orchestrator: you spawn a fleet of them, read each reply, and for every reply make one call — **answer it yourself, queue it for the human, or wake the human now** — then resume it. The human can see the fleet in `claude agents` and `claude --resume <uuid>` any daemon.
 
+**Every turn is a native background agent.** Resuming a daemon *forks* a new `--bg` agent that carries the full conversation forward — so every turn (the first and each resume) shows up in `claude agents` in real time. The registry chains the session ids under one stable identity (the daemon's original uuid): you always address a daemon by that id or by its name, even though its human-visible short id changes with every turn. The scripts hide the churn — don't hand-roll the `--bg --resume` fork yourself.
+
 **This is not `dispatching-parallel-agents`.** That skill fans out *in-session* Task subagents that share your context and die with your turn. Daemons are separate `claude` processes with their own context windows, resumable across sessions. Use daemons when work must persist, be resumed later, or not consume your context.
 
 ## The loop
@@ -18,7 +20,7 @@ A **daemon** is a durable background `claude` session, spawned with `claude --bg
 1. **Spawn** each task: `scripts/daemon-spawn.sh "<name>" "<task>" [cwd] [worktree]` under a Monitor / background shell — pass a worktree name for any code-writing daemon (see *Isolating code daemons*).
 2. **Read** the reply — it's the `--- reply ---` block in the turn output (delivered as a Monitor event, or via Read on the background shell's output file; `scripts/daemon-reply.sh <id>` re-prints it any time).
 3. **Judge** it with the rubric below.
-4. **Resume** with your answer: `scripts/daemon-resume.sh <uuid> "<message>"` under a Monitor / background shell. Or, if you queued it, `scripts/daemon-mark.sh <uuid> awaiting-human "<why>"`.
+4. **Resume** with your answer: `scripts/daemon-resume.sh <uuid> "<message>"` under a Monitor / background shell — this forks a fresh `--bg` agent (new short, natively visible in `claude agents`) while keeping the daemon's stable id. Or, if you queued it, `scripts/daemon-mark.sh <uuid> awaiting-human "<why>"`.
 5. **Track**: `scripts/daemon-list.sh` is your fleet view — show it when the human asks "what's running". Retire finished daemons with `scripts/daemon-retire.sh <uuid>`.
 
 ## Toolkit
@@ -28,7 +30,7 @@ Paths are relative to this skill's directory. The scripts hide every sharp edge 
 | Script | Does |
 |---|---|
 | `daemon-spawn.sh <name> <task> [cwd] [worktree] [model]` | Spawn a `--bg` daemon, run turn 1, wait for it. Pass a `worktree` name to isolate it (see below). Launch in a bg shell. |
-| `daemon-resume.sh <uuid> <message>` | Continue a daemon **in place** — releases the bg lock (`claude stop`) then `-p --resume`, same id. Launch in a bg shell. |
+| `daemon-resume.sh <uuid> <message>` | Continue a daemon by **forking a new `--bg` turn** (`claude stop` the old turn, then `--bg --resume`) — natively visible in `claude agents`; the registry tracks the current session id. Launch in a bg shell. |
 | `daemon-reply.sh <id>` | Print a daemon's latest full reply. |
 | `daemon-list.sh [status]` | Fleet view; optional status filter. |
 | `daemon-mark.sh <id> <status> [note]` | Record a judgment state (`awaiting-human`, `done`) + why. |
@@ -65,11 +67,10 @@ Daemons run unattended, so the prompt does the guardrail work. In every spawn pr
 
 ## Long turns
 
-Autonomous work runs as long as it needs — never pace a daemon around a timer. `DAEMON_TIMEOUT` (default 18000s = 5h, `0` = no cap) is a **hang backstop**, not a budget: it bounds resume turns and the spawn watcher's wait. Notes for long turns:
+Autonomous work runs as long as it needs — never pace a daemon around a timer. The toolkit **never kills a turn**: every turn (spawn and resume alike) runs as an independent `--bg` process that keeps working even if this orchestrator session ends. `DAEMON_TIMEOUT` (default 18000s = 5h, `0` = watch forever) bounds only how long the spawn/resume *watcher* polls — not the turn itself. Notes for long turns:
 
-- A spawned daemon's **first turn is never killed** by the toolkit — on a very long turn the watcher just stops watching; the daemon keeps working, and `daemon-reply.sh <id>` reads the reply straight from the transcript once the turn lands.
+- On a very long turn the watcher just stops watching; the daemon keeps working, and `daemon-reply.sh <id>` reads the reply straight from the transcript once the turn lands.
 - Running a turn under a non-persistent **Monitor**? Its own cap maxes out at 1h — arm it with `persistent: true` for anything longer.
-- An in-flight **resume** turn is a child of your session: if the orchestrator session dies, that turn dies with it. Committed work survives; resume the daemon to continue.
 
 ## Permissions
 
@@ -79,8 +80,8 @@ A daemon also goes `blocked` when it calls **AskUserQuestion** — headless, nob
 
 ## Common mistakes
 
-- **`-p --resume`-ing a live `--bg` daemon directly** — it's refused (*"currently running as a background agent"*). `daemon-resume.sh` runs `claude stop` first to release the ownership lock, then resumes in place. Never hand-roll this. And `--bg --resume` would *fork* a new id — never use it to continue.
+- **Hand-rolling `claude --bg --resume` to continue a daemon** — it forks a new agent but leaves the registry behind: the new short/uuid aren't chained into `current`, so `daemon-reply.sh` / `daemon-list.sh` / `daemon-retire.sh` lose track of the live turn. Always go through `daemon-resume.sh`, which forks *and* updates the chain.
 - **Resuming from the wrong directory** — `claude --resume` is scoped to the daemon's cwd/project. The scripts record and restore cwd; hand-rolled resumes fail with "No conversation found".
 - **Running a daemon turn in the foreground** — it blocks your main loop for the whole turn. Always launch spawn/resume under a Monitor or in a background shell.
 - **Waking the human for scope or "should I do more?" questions** — those are yours to answer. Queue the taste/approval forks; wake only for the last row of the rubric.
-- **Reading `claude agents` as the fleet view during resumed turns** — a daemon is a *background agent* only during its first (`--bg`) turn. Resumed turns run as `claude -p --resume` (the bg lock is released first), so mid-turn the agents UI shows the session as `stopped` with its last bg message — looking dead while it's actively working. `daemon-list.sh` (registry `status=working`) is the authoritative fleet view.
+- **Reading an OLD short id after a resume** — each resume forks a new `--bg` agent, so `claude agents` shows the current turn under a *new* short and the old one drops out of the active view. Don't cache a short across turns; `daemon-list.sh` maps each daemon name to its current short, and every script call also accepts the daemon's stable id (its original uuid).

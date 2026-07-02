@@ -50,7 +50,7 @@ digraph issue_register {
     "Cluster truly big/complex?" [shape=diamond];
     "Nested-slice (keep links)" [shape=box];
     "More clusters to grill?" [shape=diamond];
-    "Write register + hand off" [shape=doublecircle];
+    "Register onto board + hand off" [shape=doublecircle];
 
     "Ingest & atomize notes" -> "Explore project context";
     "Explore project context" -> "Tentative clustering";
@@ -61,7 +61,7 @@ digraph issue_register {
     "Cluster truly big/complex?" -> "More clusters to grill?" [label="no"];
     "Nested-slice (keep links)" -> "More clusters to grill?";
     "More clusters to grill?" -> "Clarify & grill a cluster (pre-spec)" [label="yes / re-cluster"];
-    "More clusters to grill?" -> "Write register + hand off" [label="no"];
+    "More clusters to grill?" -> "Register onto board + hand off" [label="no"];
 }
 ```
 

@@ -18,7 +18,7 @@ Upstream already practices the fix without a written norm: the strict-cost-SDD s
 
 One new skill plus four one-point hooks in existing skills:
 
-- **`skills/living-specs/`** — the doctrine's home: `SKILL.md` (the adapter: dispositions, living-section formats, calibrations) and `references/PLANS.md` (the ExecPlan source document, vendored **char-for-char**, never edited — committed alongside this spec because the source text existed only in a conversation).
+- **`skills/execspec/`** (named `living-specs` at birth; renamed same day — see Decision Log) — the doctrine's home: `SKILL.md` (the adapter: dispositions, living-section formats, calibrations) and `references/PLANS.md` (the ExecPlan source document, vendored **char-for-char**, never edited — committed alongside this spec because the source text existed only in a conversation).
 - **Hooks**: `brainstorming` (write specs in this shape; seed the Decision Log), `writing-plans` (planning is the first hostile read — fix spec drift when found), `subagent-driven-development` (route design-relevant discoveries into the spec during execution), `finishing-a-development-branch` (append the retrospective before merge).
 
 The regime is uniform: a worker daemon is the same Claude Code session running the same workflow, so there is no separate "worker path", and no writer rules — in practice one spec has one working agent maintaining it.
@@ -63,7 +63,7 @@ The **front of the spec stays untemplated** — across the 15 existing specs no 
 
 Each hook is one small insertion; exact anchor text lives in the implementation plan.
 
-1. **`brainstorming/SKILL.md`** — checklist item 6 and the "After the Design > Documentation" section: write the design doc in living-specs shape (reference `superpowers:living-specs`); seed the Decision Log from the approaches step — the 2-3 alternatives with trade-offs are already generated, capturing them is free.
+1. **`brainstorming/SKILL.md`** — checklist item 6 and the "After the Design > Documentation" section: write the design doc in living-spec shape (reference `superpowers:execspec`); seed the Decision Log from the approaches step — the 2-3 alternatives with trade-offs are already generated, capturing them is free.
 2. **`writing-plans/SKILL.md`** — Self-Review gains check 4, **Spec drift**: planning is the first hostile read of the spec; if a spec statement proved wrong while planning (an argument that is actually an output, an infeasible constraint), fix the spec now and add a Revision Note — never let the plan silently diverge.
 3. **`subagent-driven-development/SKILL.md`** — Durable Progress: in the same bookkeeping message as the ledger append, route anything from the task's report that changes design understanding (assumption proved false, constraint discovered, mid-course decision) into the spec's Surprises & Discoveries or Decision Log.
 4. **`finishing-a-development-branch/SKILL.md`** — after Step 1's tests pass, before presenting options: append the Outcomes & Retrospective entry to the spec and commit it, so the retrospective rides the branch into the merge.
@@ -80,9 +80,9 @@ Each hook is one small insertion; exact anchor text lives in the implementation 
 
 Structural (run from repo root; all must hold after implementation):
 
-- `ls skills/living-specs/` → `SKILL.md  references/`
-- `git log --oneline -- skills/living-specs/references/PLANS.md` after implementation → exactly one commit, the spec commit (vendored file never touched again; a plain `git diff HEAD` would pass even if a later task modified and committed it)
-- `grep -l "living-specs" skills/brainstorming/SKILL.md skills/writing-plans/SKILL.md skills/subagent-driven-development/SKILL.md skills/finishing-a-development-branch/SKILL.md` → prints all four paths
+- `ls skills/execspec/` → `SKILL.md  references/`
+- `git log --oneline --follow -- skills/execspec/references/PLANS.md` → exactly two commits, the rename and the original vendor commit; content byte-identical across the move (`git diff 9496bde:skills/living-specs/references/PLANS.md HEAD:skills/execspec/references/PLANS.md` → empty)
+- `grep -l "superpowers:execspec" skills/brainstorming/SKILL.md skills/writing-plans/SKILL.md skills/subagent-driven-development/SKILL.md skills/finishing-a-development-branch/SKILL.md` → prints all four paths
 
 Behavioral (observed on the next real feature, this one included):
 
@@ -135,6 +135,10 @@ Behavioral (observed on the next real feature, this one included):
   Rationale: Measured genre variance across all 15 existing specs (no repeated heading structure) is a feature — form fits problem.
   Date: 2026-07-03
 
+- Decision: Skill renamed `living-specs` → `execspec` (directory moved by the human partner; frontmatter and references completed in-session).
+  Rationale: The name adopts PLANS.md's own term for the artifact class — "executable specification (ExecPlan)" — naming the skill after the document standard it imports. Doctrine and content unchanged; "living spec" remains the concept name in prose. Vendored PLANS.md verified byte-identical across the move (shasum match).
+  Date/Author: 2026-07-03 (human partner)
+
 - Decision: writing-plans receives exactly one more structure beyond its two hooks (spec-drift check, spike tasks): the plan's final verification task executes the spec's behavior-phrased acceptance verbatim. Nothing else in writing-plans changes for the spec promotion.
   Rationale: The living tail needs no plan-side handling — journal sections aren't requirements, current models don't confuse them, and the measured doctrine says dead-weight clauses cost more than they save. Mid-execution course changes stay with SDD escalation + the Decision Log (plans are consumables; a plan-amendment protocol would be a separate feature). But acceptance was declared-but-not-received — the same gap class as spikes: the spec's Verification section stays aspirational unless the plan's final task runs it. Precedent: the living-specs plan's Task 6 already did this by instinct.
   Date/Author: 2026-07-03 (human partner asked whether writing-plans needs more; assessed and wired)
@@ -173,3 +177,4 @@ Remains: behavioral acceptance on the next real brainstorm (does a fresh session
 - 2026-07-03: Decision Log extended — separate-skill-vs-fold-into-brainstorming challenged by the human partner after implementation; rationale for the standing choice was undocumented (exactly the gap this regime exists to close), now recorded.
 - 2026-07-03: Post-finish completeness review found the spike-milestone path declared but not received — writing-plans gained a Spike Tasks section; Surprises & Discoveries entry added.
 - 2026-07-03: Second declared-but-not-received gap closed on the human partner's question: writing-plans gained a Final Verification Task section (the plan's last task executes the spec's behavior-phrased acceptance verbatim); Decision Log records what deliberately does NOT change in writing-plans.
+- 2026-07-03: Skill renamed living-specs → execspec — frontmatter, six hook mentions across four skills, this spec's Design Overview and Verification updated; historical Decision Log/Retrospective entries left as written. Plan document untouched (frozen consumable).

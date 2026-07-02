@@ -1,9 +1,9 @@
 ---
-name: living-specs
+name: execspec
 description: Use when writing, revising, or closing out a design spec (docs/superpowers/specs/) — the living-spec doctrine, vendored from Codex ExecPlans: Decision Log with rejected alternatives, Surprises & Discoveries with evidence, retrospective at finish, revision notes, behavior-phrased acceptance
 ---
 
-# Living Specs
+# Execspec — Living Specs
 
 ## Overview
 

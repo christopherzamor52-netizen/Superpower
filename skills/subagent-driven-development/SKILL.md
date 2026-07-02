@@ -261,7 +261,7 @@ a ledger file, not only in todos.
   that changed design understanding — an assumption that proved false, a
   constraint discovered, a mid-course design decision — into the spec's
   `## Surprises & Discoveries` or `## Decision Log`
-  (superpowers:living-specs). Implementation noise stays in commit
+  (superpowers:execspec). Implementation noise stays in commit
   messages, not the spec.
 - The ledger is your recovery map: the commits it names exist in git even
   when your context no longer remembers creating them. After compaction,

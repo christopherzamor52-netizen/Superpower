@@ -53,7 +53,7 @@ independently testable deliverable.
 
 ## Spike Tasks
 
-If the spec declares a prototyping milestone (superpowers:living-specs), plan it as a spike task: the deliverable is knowledge, not shipped code. State the question the spike answers, the exact steps to build and run it, what to observe, and the spec's promote-or-discard criteria verbatim. Spike tasks skip the TDD cycle — their steps are build → run → record. The final step routes the verdict into the spec's `## Surprises & Discoveries` or `## Decision Log` and applies the criteria: promote (follow-up tasks harden it with tests) or discard (delete the prototype code; the knowledge stays in the spec).
+If the spec declares a prototyping milestone (superpowers:execspec), plan it as a spike task: the deliverable is knowledge, not shipped code. State the question the spike answers, the exact steps to build and run it, what to observe, and the spec's promote-or-discard criteria verbatim. Spike tasks skip the TDD cycle — their steps are build → run → record. The final step routes the verdict into the spec's `## Surprises & Discoveries` or `## Decision Log` and applies the criteria: promote (follow-up tasks harden it with tests) or discard (delete the prototype code; the knowledge stays in the spec).
 
 ## Final Verification Task
 
@@ -159,7 +159,7 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
-**4. Spec drift:** Planning is the first hostile read of the spec. If planning revealed a spec statement that is wrong — an argument that is actually an output, an infeasible constraint, a misnamed path — fix the spec now and add a line to its `## Revision Notes` (see superpowers:living-specs). Never let the plan silently diverge from the spec.
+**4. Spec drift:** Planning is the first hostile read of the spec. If planning revealed a spec statement that is wrong — an argument that is actually an output, an infeasible constraint, a misnamed path — fix the spec now and add a line to its `## Revision Notes` (see superpowers:execspec). Never let the plan silently diverge from the spec.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 

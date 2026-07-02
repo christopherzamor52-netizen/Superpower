@@ -35,7 +35,7 @@ Cannot proceed with merge/PR until tests pass.
 
 Stop. Don't proceed to Step 2.
 
-**If tests pass:** Write the spec's `## Outcomes & Retrospective` entry — what was achieved against the spec's original purpose, gaps, lessons learned (superpowers:living-specs) — replacing its "Pending — written at finish." line, and commit it so the retrospective rides the branch into the merge. Then continue to Step 2.
+**If tests pass:** Write the spec's `## Outcomes & Retrospective` entry — what was achieved against the spec's original purpose, gaps, lessons learned (superpowers:execspec) — replacing its "Pending — written at finish." line, and commit it so the retrospective rides the branch into the merge. Then continue to Step 2.
 
 ### Step 2: Detect Environment
 

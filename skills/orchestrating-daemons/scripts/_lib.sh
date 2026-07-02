@@ -119,19 +119,19 @@ PY
   printf '%s' "$match"
 }
 
-# The on-disk transcript path for a daemon in a given cwd.
+# The on-disk transcript path for a daemon. Munging-agnostic: Claude Code mangles
+# the cwd into the project-dir name (replacing both `/` and `.`), so instead of
+# reproducing that rule we glob for the transcript by its unique UUID.
 _transcript_path() {
-  local uuid="$1" cwd="$2" munged
-  munged="$(printf '%s' "$cwd" | sed 's#/#-#g')"
-  printf '%s/.claude/projects/%s/%s.jsonl' "$HOME" "$munged" "$uuid"
+  find "$HOME/.claude/projects" -name "$1.jsonl" 2>/dev/null | head -1
 }
 
 # Print the last assistant text turn from a daemon's transcript (how we read the
 # reply of a `--bg` turn, since --bg returns no stdout result to us).
 _transcript_reply() {
-  local uuid="$1" cwd="$2" f
-  f="$(_transcript_path "$uuid" "$cwd")"
-  [ -f "$f" ] || { printf ''; return 0; }
+  local uuid="$1" f
+  f="$(_transcript_path "$uuid")"
+  [ -n "$f" ] && [ -f "$f" ] || { printf ''; return 0; }
   DAEMON_TX="$f" python3 - <<'PY'
 import json, os
 rows = [json.loads(l) for l in open(os.environ["DAEMON_TX"]) if l.strip()]
@@ -146,11 +146,12 @@ PY
 }
 
 # Poll `claude agents` until short id <1> reaches a terminal/actionable state.
-# Echoes "<full-uuid> <state>". Returns non-zero on timeout (echoes best-known).
+# Echoes "<full-uuid> <state> <cwd>" (cwd is the daemon's ACTUAL working dir —
+# the worktree path when spawned with --worktree). Non-zero on timeout.
 _poll_until_done() {
-  local short="$1" max="${2:-120}" i uuid state
+  local short="$1" max="${2:-120}" i uuid state cwd
   for ((i = 0; i < max; i++)); do
-    read -r uuid state < <(claude agents --json --all 2>/dev/null | DAEMON_SHORT="$short" python3 -c '
+    read -r uuid state cwd < <(claude agents --json --all 2>/dev/null | DAEMON_SHORT="$short" python3 -c '
 import json, os, sys
 s = os.environ["DAEMON_SHORT"]
 try:
@@ -159,12 +160,12 @@ except Exception:
     d = []
 for a in d:
     if a.get("id") == s:
-        print(a.get("sessionId", ""), a.get("state", "")); break
+        print(a.get("sessionId", ""), a.get("state", ""), a.get("cwd", "")); break
 ') || true
     case "$state" in
-      done | blocked | error) printf '%s %s' "$uuid" "$state"; return 0 ;;
+      done | blocked | error) printf '%s %s %s' "$uuid" "$state" "$cwd"; return 0 ;;
     esac
     sleep 2
   done
-  printf '%s %s' "${uuid:-}" "${state:-timeout}"; return 1
+  printf '%s %s %s' "${uuid:-}" "${state:-timeout}" "${cwd:-}"; return 1
 }

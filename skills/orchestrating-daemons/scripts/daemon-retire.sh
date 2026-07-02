@@ -14,14 +14,20 @@ source "$DIR/_lib.sh"
 uuid="$(_resolve_uuid "${1:?usage: daemon-retire.sh <uuid> [purge]}")"
 name="$(_meta_get "$uuid" name)"
 short="$(_meta_get "$uuid" short)"
+worktree="$(_meta_get "$uuid" worktree)"
 
 # Stop the bg process if it is still live (idempotent).
 [ -n "$short" ] && claude stop "$short" >/dev/null 2>&1 || true
 
+# Never auto-delete a worktree/branch — the daemon may have committed work you
+# still want to review or merge (see finishing-a-development-branch).
+wtnote=""
+[ -n "$worktree" ] && wtnote="  NOTE: work is on branch worktree-$(printf '%s' "$worktree" | tr -c 'a-zA-Z0-9._-' '-') — merge or remove its worktree yourself."
+
 if [ "${2:-}" = "purge" ]; then
   rm -f "$(_meta_path "$uuid")" "$(_reply_path "$uuid")" "$(_err_path "$uuid")"
-  echo "purged $name [$uuid] from registry (session transcript left intact; resume with: claude --resume $uuid)"
+  echo "purged $name [$uuid] from registry (session transcript left intact; resume with: claude --resume $uuid)${wtnote}"
 else
   _meta_set "$uuid" status "retired" updated "$(_now)"
-  echo "retired $name [$uuid] (still resumable: claude --resume $uuid)"
+  echo "retired $name [$uuid] (still resumable: claude --resume $uuid)${wtnote}"
 fi

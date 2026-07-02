@@ -15,7 +15,7 @@ A **daemon** is a durable background `claude` session, spawned with `claude --bg
 
 `daemon-spawn.sh` and `daemon-resume.sh` both block until the daemon's turn finishes. Run each in a **background shell** (Claude Code: the Bash tool with `run_in_background: true`) so the wait never ties up your main loop — the shell's exit re-invokes you with the daemon's reply.
 
-1. **Spawn** each task: `scripts/daemon-spawn.sh "<name>" "<task>" [cwd]` in a background shell.
+1. **Spawn** each task: `scripts/daemon-spawn.sh "<name>" "<task>" [cwd] [worktree]` in a background shell — pass a worktree name for any code-writing daemon (see *Isolating code daemons*).
 2. **Read** the reply — it's the `--- reply ---` block in the shell output, or `scripts/daemon-reply.sh <id>`.
 3. **Judge** it with the rubric below.
 4. **Resume** with your answer: `scripts/daemon-resume.sh <uuid> "<message>"` in a background shell. Or, if you queued it, `scripts/daemon-mark.sh <uuid> awaiting-human "<why>"`.
@@ -27,7 +27,7 @@ Paths are relative to this skill's directory. The scripts hide every sharp edge 
 
 | Script | Does |
 |---|---|
-| `daemon-spawn.sh <name> <task> [cwd] [model]` | Spawn a `--bg` daemon, run turn 1, wait for it. Launch in a bg shell. |
+| `daemon-spawn.sh <name> <task> [cwd] [worktree] [model]` | Spawn a `--bg` daemon, run turn 1, wait for it. Pass a `worktree` name to isolate it (see below). Launch in a bg shell. |
 | `daemon-resume.sh <uuid> <message>` | Continue a daemon **in place** — releases the bg lock (`claude stop`) then `-p --resume`, same id. Launch in a bg shell. |
 | `daemon-reply.sh <id>` | Print a daemon's latest full reply. |
 | `daemon-list.sh [status]` | Fleet view; optional status filter. |
@@ -46,6 +46,18 @@ When a daemon ends its turn with a question or decision point, **"needs a human"
 | Something destructive/irreversible about to happen, a security / data-loss / production risk, or a hard blocker where every path needs info only the human has **and** it can't wait | **Wake the human now** (send a PushNotification). |
 
 You are trusted to answer on the human's behalf for technical and mechanical calls. Escalate *judgment*, not *work*.
+
+## Isolating code daemons
+
+Parallel daemons that edit files will clobber each other in a shared directory. **Spawn any daemon that writes code with a worktree name** (the 4th arg) so it runs isolated:
+
+```
+daemon-spawn.sh "rename-auth" "<task>" /path/to/repo rename-auth
+```
+
+This uses `claude`'s native `--worktree` flag (per `using-git-worktrees`: prefer native worktree tools over hand-rolled `git worktree add`) to run the daemon in `<repo>/.claude/worktrees/rename-auth` on branch `worktree-rename-auth`. Resume, reply-reading, and tracking follow the worktree automatically. **Skip the worktree for read-only/research daemons** — they don't write, and may not even be in a git repo.
+
+An isolated daemon's finished work is a *committed branch, not merged*. Integrating it is a separate decision: surface it (queue/escalate per the rubric) and use `finishing-a-development-branch` to merge. `daemon-retire.sh` never deletes a worktree or branch.
 
 ## Spawn-prompt hygiene
 

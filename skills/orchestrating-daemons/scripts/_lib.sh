@@ -4,12 +4,17 @@
 #
 # A "daemon" is a durable background `claude` session spawned with `claude --bg`
 # (so it is an independent process, visible in `claude agents`, and survives this
-# orchestrator ending). It is continued IN PLACE with `claude -p --resume` after
-# `claude stop` releases the bg ownership lock — same session id, no fork.
+# orchestrator ending). It is CONTINUED BY FORKING: each resume runs `claude stop`
+# on the current turn, then `claude --bg --resume` to spawn a fresh bg agent that
+# carries the full context forward. So every turn — the first and every resume —
+# is a native background agent visible in `claude agents`.
 #
 # Each daemon has one metadata file (<uuid>.json) and one latest-reply file
-# (<uuid>.reply.txt, plain text) under the registry dir. One turn per daemon runs
-# at a time, so per-daemon files never race.
+# (<uuid>.reply.txt, plain text) under the registry dir. The meta is keyed by the
+# daemon's ORIGINAL session uuid (its stable identity); the `current` field chains
+# to the latest turn's session, so the human-visible short id changes each turn but
+# the daemon's id does not. One turn per daemon runs at a time, so per-daemon files
+# never race.
 
 set -euo pipefail
 
@@ -17,10 +22,10 @@ set -euo pipefail
 DAEMON_HOME="${DAEMON_HOME:-$HOME/.claude/orchestrating-daemons}"
 mkdir -p "$DAEMON_HOME"
 
-# Wall-clock backstop (seconds) for resume turns, and how long spawn's watcher
-# waits for the first turn. Autonomous daemons do long work — this is a hang
-# backstop, NOT a pacing tool. Default 5 hours; 0 disables it entirely.
-# Override per-invocation with DAEMON_TIMEOUT.
+# How long the spawn/resume WATCHER polls `claude agents` for a turn to finish —
+# a wait bound only, NOT a turn budget. The toolkit never kills a turn: every turn
+# is an independent `--bg` process that keeps running regardless. Default 5 hours;
+# 0 = watch forever. Override per-invocation with DAEMON_TIMEOUT.
 DAEMON_TIMEOUT="${DAEMON_TIMEOUT:-18000}"
 
 _now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
@@ -31,28 +36,6 @@ _err_path()   { printf '%s/%s.err' "$DAEMON_HOME" "$1"; }
 
 # Strip ANSI color codes (the `claude --bg` banner is colored even when piped).
 _strip_ansi() { sed -E 's/\x1b\[[0-9;]*m//g'; }
-
-# Portable timeout: macOS ships neither `timeout` nor `gtimeout` by default.
-# secs=0 means no cap — run the command bare.
-_timeout() {
-  local secs="$1"; shift
-  if [ "$secs" = "0" ]; then
-    "$@"
-  elif command -v timeout >/dev/null 2>&1; then
-    timeout "$secs" "$@"
-  elif command -v gtimeout >/dev/null 2>&1; then
-    gtimeout "$secs" "$@"
-  else
-    "$@" &
-    local pid=$!
-    ( sleep "$secs"; kill -TERM "$pid" 2>/dev/null || true ) &
-    local watcher=$!
-    local rc=0
-    wait "$pid" || rc=$?
-    kill "$watcher" 2>/dev/null || true
-    return "$rc"
-  fi
-}
 
 # Merge key=value pairs into a daemon's metadata JSON (creates it if absent).
 # Usage: _meta_set <uuid> field1 value1 [field2 value2 ...]
@@ -98,20 +81,34 @@ _reply_text() {
   if [ -f "$p" ]; then cat "$p"; else printf '(no reply yet)'; fi
 }
 
-# Resolve a short id (or full UUID prefix) to a full UUID by matching registry
-# metadata files. Prints the full UUID, or errors if zero / multiple matches.
+# Resolve a query to a daemon's stable uuid (the meta FILENAME) by matching, in
+# order, the meta filename prefix, then the meta's `short` and `current` fields.
+# After a resume forks a new turn, the human copies the CURRENT turn's short id
+# from `claude agents` — that short lives in the meta, not in the filename, so we
+# have to read each meta to find it. Prints the daemon uuid, or errors if zero /
+# multiple daemons match.
 _resolve_uuid() {
   local q="$1" match
   match="$(DAEMON_HOME="$DAEMON_HOME" python3 - "$q" <<'PY'
-import glob, os, sys
+import glob, json, os, sys
 home = os.environ["DAEMON_HOME"]; q = sys.argv[1]
-hits = []
+hits = set()
 for p in glob.glob(os.path.join(home, "*.json")):
     if p.endswith(".reply.json"):
         continue
     u = os.path.basename(p)[:-5]
     if u == q or u.startswith(q):
-        hits.append(u)
+        hits.add(u); continue
+    try:
+        with open(p) as f:
+            m = json.load(f)
+    except Exception:
+        continue
+    for field in ("short", "current"):
+        v = str(m.get(field, ""))
+        if v and (v == q or v.startswith(q)):
+            hits.add(u); break
+hits = sorted(hits)
 if len(hits) == 1:
     print(hits[0])
 elif not hits:

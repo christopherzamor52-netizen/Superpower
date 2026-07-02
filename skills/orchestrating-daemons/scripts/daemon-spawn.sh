@@ -54,7 +54,7 @@ read -r uuid state runcwd < <(_poll_until_done "$short" "$((DAEMON_TIMEOUT / 2))
 status="idle"; [ "$state" = "blocked" ] && status="blocked"; [ "$state" = "error" ] && status="error"
 _transcript_reply "$uuid" > "$(_reply_path "$uuid")"
 _meta_set "$uuid" \
-  uuid "$uuid" short "$short" name "$name" task "$task" cwd "$runcwd" \
+  uuid "$uuid" current "$uuid" short "$short" name "$name" task "$task" cwd "$runcwd" \
   worktree "$worktree" model "$model" \
   status "$status" created "$(_now)" updated "$(_now)" turns "1"
 

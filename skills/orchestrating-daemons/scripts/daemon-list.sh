@@ -26,6 +26,9 @@ for p in glob.glob(os.path.join(home, "*.json")):
     if want and m.get("status") != want:
         continue
     uuid = m.get("uuid", "")
+    # SHORT shows the CURRENT turn's short id (what `claude agents` displays) —
+    # it changes each resume. The reply file stays keyed by the original uuid.
+    short = m.get("short", "") or uuid[:8]
     reply = ""
     rp = os.path.join(home, f"{uuid}.reply.txt")
     if os.path.exists(rp):
@@ -33,7 +36,7 @@ for p in glob.glob(os.path.join(home, "*.json")):
             reply = " ".join(open(rp).read().split())
         except Exception:
             pass
-    rows.append((m.get("updated", ""), m.get("name", "?"), uuid, m.get("status", "?"),
+    rows.append((m.get("updated", ""), m.get("name", "?"), short, m.get("status", "?"),
                  m.get("turns", "0"), reply))
 
 rows.sort(reverse=True)
@@ -42,8 +45,8 @@ if not rows:
 
 print(f"{'NAME':<18} {'SHORT':<9} {'STATUS':<14} {'T':>2}  LATEST REPLY")
 print("-" * 96)
-for updated, name, uuid, status, turns, reply in rows:
-    print(f"{name[:18]:<18} {uuid[:8]:<9} {status:<14} {str(turns):>2}  {reply[:52]}")
+for updated, name, short, status, turns, reply in rows:
+    print(f"{name[:18]:<18} {short[:8]:<9} {status:<14} {str(turns):>2}  {reply[:52]}")
 print()
 print("full uuid + reply:  daemon-reply.sh <short-or-full-uuid>")
 PY

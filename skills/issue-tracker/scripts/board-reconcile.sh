@@ -100,5 +100,5 @@ epics = {n["parent"] for n in tickets.values() if n.get("parent")}
 for t, n in by_id(tickets.items()):
     if n["state"] == "ready-for-agent" and t not in epics \
        and all(tickets.get(b, {}).get("state") == "done" for b in n.get("blocked_by", [])):
-        print("dispatch  %s: %s" % (t, n["title"]))
+        print("dispatch  %s: %s" % (t, " ".join(str(n["title"]).split())))
 PY

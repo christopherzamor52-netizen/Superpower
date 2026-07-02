@@ -112,7 +112,7 @@ if to == "done":
     for t, n in sorted(tickets.items(), key=lambda kv: int(kv[0][1:])):
         if n["state"] == "ready-for-agent" and tid in n.get("blocked_by", []) \
            and all(tickets.get(b, {}).get("state") == "done" for b in n["blocked_by"]):
-            print("now eligible: %s  %s" % (t, n["title"]))
+            print("now eligible: %s  %s" % (t, " ".join(str(n["title"]).split())))
 
 tmp = env["BOARD_MAP"] + ".tmp"
 with open(tmp, "w") as f:

@@ -21,8 +21,8 @@ note="" branch="" pr=""
 if [ $# -gt 0 ] && [ "${1#--}" = "$1" ]; then note="$1"; shift; fi
 while [ $# -gt 0 ]; do
   case "$1" in
-    --branch) branch="$2"; shift 2 ;;
-    --pr) pr="$2"; shift 2 ;;
+    --branch) _need_arg "$1" "${2:-}"; branch="$2"; shift 2 ;;
+    --pr) _need_arg "$1" "${2:-}"; pr="$2"; shift 2 ;;
     *) die "unknown option: $1" ;;
   esac
 done
@@ -42,7 +42,7 @@ LEGAL = {
     "in-progress":     {"needs-info", "blocked", "in-review", "done", "wontfix", "deferred"},
     "needs-info":      {"ready-for-agent", "in-progress", "wontfix", "deferred"},
     "blocked":         {"ready-for-agent", "in-progress", "wontfix", "deferred"},
-    "in-review":       {"in-progress", "done", "wontfix"},
+    "in-review":       {"in-progress", "done", "wontfix", "deferred"},
     "deferred":        {"ready-for-agent", "needs-info", "blocked", "wontfix"},
     "done":            set(),   # terminal
     "wontfix":         set(),   # terminal
@@ -65,6 +65,8 @@ if to not in LEGAL[cur]:
     die("illegal transition: %s → %s (%s)" % (cur, to, tid))
 if to in NOTE_REQUIRED and not note:
     die("a note is required when moving to %s" % to)
+if to == "in-review" and not env.get("T_PR"):
+    die("a PR link is required when moving to in-review (--pr URL)")
 
 applied = []
 def apply(t, new, why):

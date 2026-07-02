@@ -194,6 +194,45 @@ map_before="$(cat "$BOARD/map.json")"
 run board-reconcile.sh >/dev/null
 assert_equals "$(cat "$BOARD/map.json")" "$map_before" "reconcile never writes the board"
 
+# ---- Task 5: review findings — PR-gated in-review, in-review→deferred, --------
+#              hardened reconcile, option-arity guard.
+# All new activity is appended AFTER the last log-count assertion, so those
+# earlier counts stay valid. Highest ticket registered so far is T9 → T10 next.
+echo "board-transition / board-reconcile (review findings):"
+
+# in-review → deferred is legal (spec's "any → deferred"): register a fresh
+# ticket, drive it in-progress → in-review (--pr) → deferred.
+run board-register.sh "Review-cycle ticket" enhancement >/dev/null   # T10
+run board-transition.sh T10 in-progress >/dev/null
+out="$(run board-transition.sh T10 in-review --pr "PR#T10")"
+assert_contains "$out" "T10: in-progress → in-review" "in-progress → in-review recorded with --pr"
+out="$(run board-transition.sh T10 deferred)"
+assert_contains "$out" "T10: in-review → deferred" "in-review → deferred is legal"
+
+# Moving to in-review WITHOUT --pr is refused (a PR link is mandatory).
+run board-register.sh "Needs a PR link" bug >/dev/null               # T11
+run board-transition.sh T11 in-progress >/dev/null
+assert_fails run board-transition.sh T11 in-review
+
+# A malformed daemon meta (ticket that isn't a real board ticket) must not
+# crash reconcile — it is the wake-up recovery path. Reconcile stays exit 0
+# and reports the anomaly by name.
+cat > "$DAEMON_HOME/cccc3333-0000-0000-0000-000000000003.json" <<'META'
+{"uuid": "cccc3333-0000-0000-0000-000000000003", "short": "cccc3333",
+ "name": "ghost", "status": "idle", "cwd": "/tmp/z", "worktree": "z",
+ "ticket": "bogus"}
+META
+if out="$(run board-reconcile.sh)"; then pass "reconcile survives malformed daemon meta (exit 0)"; else
+    fail "reconcile survives malformed daemon meta (exit 0)"; fi
+assert_contains "$out" "anomaly" "reconcile reports an anomaly for the malformed meta"
+assert_contains "$out" "bogus" "reconcile names the bogus ticket instead of crashing"
+
+# A missing option operand dies cleanly, naming the option (not a raw set -u
+# unbound-variable error).
+err="$( { run board-transition.sh T11 in-progress --branch; } 2>&1 1>/dev/null || true )"
+assert_contains "$err" "--branch" "missing option operand names the option in the error"
+assert_fails run board-transition.sh T11 in-progress --branch
+
 # ---- summary -----------------------------------------------------------------
 echo
 if [[ "$FAILURES" -eq 0 ]]; then echo "ALL TESTS PASSED"; else

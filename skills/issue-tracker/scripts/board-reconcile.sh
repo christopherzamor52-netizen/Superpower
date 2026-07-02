@@ -28,9 +28,18 @@ for p in sorted(glob.glob(os.path.join(env["T_DHOME"], "*.json"))):
             m = json.load(f)
     except (ValueError, OSError):
         continue
-    if m.get("ticket"):
-        m["_uuid"] = m.get("uuid", os.path.basename(p)[:-5])
-        bound[m["ticket"]] = m
+    tk = m.get("ticket")
+    if not tk:
+        continue
+    uuid = m.get("uuid", os.path.basename(p)[:-5])
+    # A meta whose `ticket` isn't a real board ticket (wrong format or unknown
+    # id) must not poison the id-sorted views — flag it and skip. This is the
+    # wake-up recovery path, so it stays alive through garbage.
+    if not re.match(r"^T[0-9]+$", str(tk)) or tk not in tickets:
+        print("anomaly   daemon %s: bound to unknown ticket '%s'" % (uuid[:8], tk))
+        continue
+    m["_uuid"] = uuid
+    bound[tk] = m
 
 def by_id(items):
     return sorted(items, key=lambda kv: int(kv[0][1:]))
@@ -55,7 +64,13 @@ for t, m in by_id(bound.items()):
     if prop and prop.get("to") and prop["to"] != cur:
         print("proposal  %s: %s → %s  (reason: %s; evidence: %s)" %
               (t, cur, prop["to"], prop.get("reason", "-"), prop.get("evidence", "-")))
-        print("          apply: board-transition.sh %s %s" % (t, prop["to"]))
+        ev = prop.get("evidence")
+        if prop["to"] == "in-review" and ev:
+            # in-review is PR-gated: carry the proposal's evidence into the hint
+            # as the required --pr value so the apply command runs as-printed.
+            print('          apply: board-transition.sh %s in-review --pr "%s"' % (t, ev))
+        else:
+            print("          apply: board-transition.sh %s %s" % (t, prop["to"]))
 
 # 2. in-progress tickets with a missing or terminal daemon.
 for t, n in by_id(tickets.items()):

@@ -21,11 +21,11 @@ shift 2
 state="ready-for-agent" note="" parent="" blocked_by="" spawned_by=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    --state) state="$2"; shift 2 ;;
-    --note) note="$2"; shift 2 ;;
-    --parent) parent="$2"; shift 2 ;;
-    --blocked-by) blocked_by="$2"; shift 2 ;;
-    --spawned-by) spawned_by="$2"; shift 2 ;;
+    --state) _need_arg "$1" "${2:-}"; state="$2"; shift 2 ;;
+    --note) _need_arg "$1" "${2:-}"; note="$2"; shift 2 ;;
+    --parent) _need_arg "$1" "${2:-}"; parent="$2"; shift 2 ;;
+    --blocked-by) _need_arg "$1" "${2:-}"; blocked_by="$2"; shift 2 ;;
+    --spawned-by) _need_arg "$1" "${2:-}"; spawned_by="$2"; shift 2 ;;
     *) die "unknown option: $1" ;;
   esac
 done

@@ -17,6 +17,11 @@ die() {
   exit 1
 }
 
+# Arity guard for option parsing: die (naming the option) instead of tripping a
+# raw `set -u` unbound-variable error when an option is given its final operand.
+# Call as `_need_arg "$1" "${2:-}"` right before consuming "$2".
+_need_arg() { [ -n "${2:-}" ] || die "option $1 requires a value"; }
+
 # Resolve the repo root; refuse linked worktrees (canonical-copy rule).
 # In a linked worktree, --git-dir points under <main>/.git/worktrees/<name>
 # while --git-common-dir points at <main>/.git — they differ.

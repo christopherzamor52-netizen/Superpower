@@ -90,6 +90,7 @@ dispatch gate: state == ready-for-agent  AND  every blocked_by ticket is done
 in-progress ↔ needs-info | blocked        (worker escalates via proposal block)
 in-progress → in-review                    (PR opened; branch/pr recorded)
 in-review  → done                          (only after the merge is verified landed — merge-gated)
+in-progress → done                         (no-PR ticket only — work landed directly; verify before flipping)
 any → wontfix | deferred                   (human/orchestrator judgment)
 done sweep (automatic in board-transition): re-evaluate every ticket whose blocked_by
   contains this one; check the parent epic for all-children-done → parent done

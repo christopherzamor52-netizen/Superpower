@@ -208,8 +208,10 @@ try:
 except Exception:
     d = []
 for a in d:
-    if a.get("id") == s:
-        print(a.get("sessionId", ""), a.get("state", ""), a.get("cwd", "")); break
+    # A row with an empty sessionId is unusable (and would jumble the whitespace
+    # parsing downstream) — keep polling until the uuid materializes.
+    if a.get("id") == s and a.get("sessionId"):
+        print(a.get("sessionId"), a.get("state", ""), a.get("cwd", "")); break
 ') || true
     case "$state" in
       done | blocked | error) printf '%s %s %s' "$uuid" "$state" "$cwd"; return 0 ;;

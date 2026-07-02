@@ -106,6 +106,8 @@ if [ $has_bg -eq 1 ]; then
   n=$(cat "$STUB_STATE/counter" 2>/dev/null || echo 0); n=$((n + 1)); echo "$n" > "$STUB_STATE/counter"
   short=$(printf '%08x' "$n")
   uuid="${short}-e808-4cad-a7e0-c1e6447bad28"
+  # STUB_NO_UUID emulates an agents row whose sessionId never materializes.
+  [ "${STUB_NO_UUID:-0}" = "1" ] && uuid=""
   # --worktree makes the daemon's real cwd the worktree path (what agents reports).
   cwd="$PWD"; [ -n "$worktree" ] && cwd="$PWD/.claude/worktrees/$worktree"
   # STUB_BG_STATE pins the created agent's reported state (default done). Setting
@@ -113,7 +115,9 @@ if [ $has_bg -eq 1 ]; then
   { echo "short=$short"; echo "uuid=$uuid"; echo "name=$name"; echo "state=${STUB_BG_STATE:-done}"; echo "status="; echo "cwd=$cwd"; } > "$STUB_STATE/agents/$short"
   # A resume FORKS a new session: the new turn's transcript records which session
   # it forked from, so the test can prove the registry chains ids across turns.
-  if [ -n "$resume_uuid" ]; then
+  if [ -z "$uuid" ]; then
+    :  # no session uuid → no transcript to write
+  elif [ -n "$resume_uuid" ]; then
     write_asst "$uuid" "FORKED:$resume_uuid:ANSWER:$prompt"
   else
     write_asst "$uuid" "ANSWER:$prompt"
@@ -320,6 +324,44 @@ B_SHORT_NEW="$(sed -n 's/.*"short": "\([^"]*\)".*/\1/p' "$DAEMON_HOME/$B_UUID.js
 assert_contains "$B_META" '"turns": "1"' "watcher timeout does not bump turns"
 assert_equals "$(cat "$DAEMON_HOME/$B_UUID.reply.txt")" "SENTINEL-REPLY-DO-NOT-OVERWRITE" "watcher timeout leaves the reply file untouched"
 assert_file_absent "$HOME/.claude/jobs/$B_SHORT" "confirmed-but-running fork still purges the superseded turn"
+
+# (b2) Recovery path: once the timed-out turn lands, daemon-reply must surface
+# the CURRENT session's transcript — a stale reply file from a previous turn
+# must not shadow it while status=working.
+B_REPLY="$("$SCRIPTS_DIR/daemon-reply.sh" "$B_UUID")"
+assert_contains "$B_REPLY" "FORKED:$B_UUID:ANSWER:long task" "daemon-reply reads the timed-out turn's transcript (status=working)"
+printf '%s' "$B_REPLY" | grep -Fq "SENTINEL-REPLY-DO-NOT-OVERWRITE" \
+    && fail "daemon-reply ignores the stale reply file while working" \
+    || pass "daemon-reply ignores the stale reply file while working"
+
+# (e) A forked agent whose agents row never carries a sessionId must not corrupt
+# the chain: the poll skips uuid-less rows, so resume times out with no uuid →
+# recovery path (pending_short), current unchanged, nothing purged.
+E_OUT="$("$SCRIPTS_DIR/daemon-spawn.sh" "nouuid" "seed-e" "$WORK")"
+E_SHORT="$(spawn_short "$E_OUT")"; E_UUID="$(spawn_uuid "$E_OUT")"
+mkdir -p "$HOME/.claude/jobs/$E_SHORT"
+E_RC=0
+STUB_NO_UUID=1 "$SCRIPTS_DIR/daemon-resume.sh" "$E_SHORT" "go" >/dev/null 2>&1 || E_RC=$?
+[ "$E_RC" -ne 0 ] && pass "uuid-less forked row makes resume exit nonzero" \
+    || fail "uuid-less forked row makes resume exit nonzero"
+E_META="$(cat "$DAEMON_HOME/$E_UUID.json")"
+assert_contains "$E_META" "\"current\": \"$E_UUID\"" "uuid-less row leaves current unchanged"
+assert_contains "$E_META" '"pending_short"' "uuid-less row stashes pending_short"
+[ -d "$HOME/.claude/jobs/$E_SHORT" ] && pass "uuid-less row purges nothing" \
+    || fail "uuid-less row purges nothing"
+
+# (f) _session_purge guards: only an exactly-8-lowercase-hex short is ever
+# rm -rf'ed — malformed input is a no-op, not a deletion.
+mkdir -p "$HOME/.claude/jobs/deadbeef"
+(source "$SCRIPTS_DIR/_lib.sh"
+ _session_purge "dead;rm " ""
+ _session_purge "deadbe" ""
+ _session_purge "DEADBEEF" "")
+[ -d "$HOME/.claude/jobs/deadbeef" ] && pass "_session_purge ignores malformed shorts" \
+    || fail "_session_purge ignores malformed shorts"
+(source "$SCRIPTS_DIR/_lib.sh"; _session_purge "deadbeef" "")
+[ ! -d "$HOME/.claude/jobs/deadbeef" ] && pass "_session_purge removes a valid short's jobs entry" \
+    || fail "_session_purge removes a valid short's jobs entry"
 
 # (c) The old turn is stopped BEFORE the fork launches (never stop an in-flight
 # turn after forking). Assert the ordering in calls.log for a fresh daemon.

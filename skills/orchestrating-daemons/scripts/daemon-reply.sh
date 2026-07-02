@@ -13,13 +13,21 @@ uuid="$(_resolve_uuid "${1:?usage: daemon-reply.sh <short-or-full-uuid>}")"
 echo "$(_meta_get "$uuid" name)  [$uuid]  status=$(_meta_get "$uuid" status)  turns=$(_meta_get "$uuid" turns)"
 echo "task: $(_meta_get "$uuid" task)"
 echo "--- latest reply ---"
-# The recorded reply file can be stale/empty when the watcher gave up before a
-# long turn finished — fall back to the live transcript of the CURRENT session
-# (the latest forked turn; falls back to the daemon uuid for pre-fork metas).
-reply="$(_reply_text "$uuid")"
-if [ -n "$reply" ] && [ "$reply" != "(no reply yet)" ]; then
-  printf '%s\n' "$reply"
+cur="$(_meta_get "$uuid" current)"; [ -n "$cur" ] || cur="$uuid"
+if [ "$(_meta_get "$uuid" status)" = "working" ]; then
+  # A turn is in flight (or a watcher expired on it): the recorded reply file
+  # belongs to a PREVIOUS turn — the live truth is the current session's
+  # transcript. This is the recovery path resume points at after a watcher
+  # timeout; without it a stale reply file would shadow the finished turn.
+  reply="$(_transcript_reply "$cur")"
+  if [ -n "$reply" ]; then printf '%s\n' "$reply"; else _reply_text "$uuid"; fi
 else
-  cur="$(_meta_get "$uuid" current)"; [ -n "$cur" ] || cur="$uuid"
-  _transcript_reply "$cur"
+  # The recorded reply file can still be stale/empty when the SPAWN watcher gave
+  # up before the first turn finished — fall back to the current transcript.
+  reply="$(_reply_text "$uuid")"
+  if [ -n "$reply" ] && [ "$reply" != "(no reply yet)" ]; then
+    printf '%s\n' "$reply"
+  else
+    _transcript_reply "$cur"
+  fi
 fi

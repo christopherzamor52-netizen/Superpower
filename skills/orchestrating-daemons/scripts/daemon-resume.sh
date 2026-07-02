@@ -75,9 +75,16 @@ fi
 poll_rc=0
 poll_out="$(_poll_until_done "$newshort" "$((DAEMON_TIMEOUT / 2))")" || poll_rc=$?
 newuuid="${poll_out%% *}"; state="${poll_out#* }"; state="${state%% *}"
+case "$newuuid" in
+  *[!0-9a-f-]*) newuuid="" ;;  # defensive: a jumbled poll line is not a session uuid
+esac
 
-if [ "$poll_rc" -ne 0 ]; then
-  # Watcher expired before the turn reached a terminal state.
+# A terminal poll can still carry an EMPTY sessionId (`claude agents` row with
+# no uuid) — leading-space parsing maps that to newuuid="". Never finalize meta
+# from such a row: route it through the same recovery path as a no-uuid timeout.
+if [ "$poll_rc" -ne 0 ] || [ -z "$newuuid" ]; then
+  # Watcher expired before the turn reached a terminal state — or the row it
+  # returned had no usable uuid.
   if [ -n "$newuuid" ]; then
     # The fork DID launch and is still running — record that truth: advance the
     # chain to the new turn and mark status=working. Do NOT write the reply file
@@ -89,12 +96,12 @@ if [ "$poll_rc" -ne 0 ]; then
     echo "resume: watcher expired after $((DAEMON_TIMEOUT / 2)) polls; forked turn $newshort ($newuuid) is still running (status=working)." >&2
     echo "        run daemon-reply.sh $uuid once it lands to read the reply." >&2
   else
-    # Timed out with NO uuid: the forked agent never appeared in `claude agents`.
+    # NO usable uuid (agent never appeared, or its row had an empty sessionId).
     # Keep `short`/`current` on the previous (consistent) session so daemon-reply
     # never reads a half-existent turn; stash the parsed short as `pending_short`
     # so the new turn stays recoverable by hand.
     _meta_set "$uuid" status "error" pending_short "$newshort" updated "$(_now)"
-    echo "resume: forked agent $newshort never appeared in 'claude agents'; kept previous current (recover via meta pending_short)." >&2
+    echo "resume: forked agent $newshort produced no usable session uuid; kept previous current (recover via meta pending_short)." >&2
   fi
   exit 1
 fi

@@ -1,6 +1,6 @@
 ---
 name: issue-register
-description: Use when you have a pile of raw idea notes, a brain-dump, or several half-formed ideas that need to be clarified and organized before any design — especially when it is unclear which ideas are independent, how they cluster, or which are worth pursuing. Use before brainstorming or grill-with-docs, when you are not yet down to a single well-scoped idea.
+description: Use when you have MULTIPLE raw ideas to sort out — a brain-dump, a notes file, or several half-formed ideas — that need to be clarified, clustered, and organized before any design, especially when it is unclear which ideas are independent, how they group, or which are worth pursuing. This skill is for MANY ideas; for a single idea, use brainstorming instead.
 ---
 
 # Issue Register
@@ -8,6 +8,10 @@ description: Use when you have a pile of raw idea notes, a brain-dump, or severa
 Turn a messy pile of idea notes into a clustered, well-articulated **pre-spec issue map** — clarified and grilled relentlessly, borrowing brainstorming's front-half procedure, but stopping before any solution, approach, architecture, or spec.
 
 It takes MANY raw notes (some independent, some related), clusters them into shippable groups, grills each to pre-spec, and writes a durable map with the links between groups and slices preserved.
+
+<HARD-GATE>
+**Precondition — MULTIPLE ideas only.** This skill exists to cluster and organize *many* ideas. If you are down to a single idea — even an underdeveloped or unclear one — STOP and redirect to `brainstorming`. One idea has nothing to cluster; do not run this skill on it, and do not "cluster-of-one" your way through it.
+</HARD-GATE>
 
 <HARD-GATE>
 Do NOT write a spec, write code, or publish implementation issues. Only clarify, cluster, and articulate to **pre-spec** — problem, intent, constraints, success criteria. Solution space begins the moment you say "we could build it as X" or "here are 2-3 approaches" — stop before that, for EVERY cluster, regardless of how obvious the solution seems. This applies to every idea regardless of perceived simplicity.
@@ -22,11 +26,6 @@ Every idea dump goes through clustering and clarification, even a short one. "Ob
 - A brain-dump, notes file, or several half-formed ideas.
 - Unclear which ideas are independent, how they group, or which are worth pursuing.
 
-**When NOT to use:**
-- You already have ONE well-scoped idea → use `brainstorming` (or `/grill-with-docs`) directly.
-- You want implementation-ready issues (vertical slices, acceptance criteria) → `/to-issues`.
-- An external bug report or feature request arrived → `/triage`.
-
 ## Checklist
 
 You MUST create a task for each item and complete them in order:
@@ -37,7 +36,7 @@ You MUST create a task for each item and complete them in order:
 4. **Clarify & grill each cluster to pre-spec** — relentlessly, one question at a time (see below). Sharpen fuzzy terms. Re-cluster as understanding sharpens.
 5. **Nested slicing (only if a cluster is truly big/complex)** — split into child work-items, each still pre-spec. PRESERVE THE LINK: stable IDs + explicit parent refs.
 6. **Write the register** — produce the map artifact (template below). Map-first (markdown); export to a tracker only if asked.
-7. **Stop & hand off** — present the reviewed map. Per work-item the next step is depth elsewhere (`/grill-with-docs` or `brainstorming` → `/to-prd` → `/to-issues`). When handing one off, pass its **register path + stable ID** (and parent ID if a child) so the link survives the boundary — the downstream work traces back to its register entry. Do NOT cross the seam here.
+7. **Stop & hand off** — present the reviewed map. Per work-item the next step is depth elsewhere (`brainstorming`). When handing one off, pass its **register path + stable ID** (and parent ID if a child) so the link survives the boundary — the downstream work traces back to its register entry. Do NOT cross the seam here.
 
 ## Process Flow
 
@@ -117,6 +116,7 @@ Deliberately **NOT** in a work-item: solution, architecture, tech choices, file 
 
 | Mistake | Fix |
 |--------|-----|
+| Running on a single idea (cluster-of-one) | Wrong skill — this needs multiple ideas. Redirect to `brainstorming`. |
 | Crossing the seam (proposing solutions/approaches/architecture) | Stop at problem/constraints/success. Record "how" as a downstream question. |
 | Turning it into a design/spec (brainstorming's telos leaking in) | This skill's terminal state is a pre-spec map, NOT a design. Hand off for design. |
 | One-idea tunnel vision (treating the whole dump as a single project) | It is usually several. Cluster first. |
@@ -124,10 +124,11 @@ Deliberately **NOT** in a work-item: solution, architecture, tech choices, file 
 | Dropping the link at handoff | Pass the register path + work-item ID (and parent ID) downstream so the graph survives the boundary. |
 | Grilling everything to death | Triage: grill what is fuzzy or important. |
 | Silent drops or merges (notes vanishing into vague clusters) | Every note → one work-item, or explicitly parked. |
-| Publishing implementation issues | That is `/to-issues`' job. The register is pre-spec. |
+| Publishing implementation issues | That happens downstream, after design. The register is pre-spec. |
 
 ## Key Principles
 
+- **Many ideas, not one** — this skill clusters a plurality; a lone idea belongs in `brainstorming`.
 - **Cluster first, then grill** — grilling needs a target; establish tentative groups before deep interviewing.
 - **One question at a time** — with your recommended answer.
 - **Keep the link** — every slice remembers its parent, and hands off with its register path + ID; the map is a graph, not a shredder.

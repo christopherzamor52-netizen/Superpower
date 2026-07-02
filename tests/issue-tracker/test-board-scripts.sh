@@ -124,6 +124,43 @@ assert_contains "$out" "now eligible: T7" "done sweep reports newly eligible dep
 lines="$(wc -l < "$BOARD/log.jsonl" | tr -d ' ')"
 assert_equals "$lines" "17" "every applied change logged (7 births + 10 transitions)"
 
+# ---- Task 3: list + show ------------------------------------------------------
+echo "board-list / board-show:"
+
+# Fresh eligible ticket + a blocked-by-live-ticket dependent
+run board-register.sh "Solo ready" enhancement >/dev/null            # T8
+run board-register.sh "Waiting on T8" bug --blocked-by T8 >/dev/null # T9
+
+out="$(run board-list.sh)"
+assert_contains "$out" "T8" "list shows all tickets"
+echo "$out" | grep "T8" | grep -q "ELIGIBLE" && pass "T8 eligible" || fail "T8 eligible"
+echo "$out" | grep "T9" | grep -q "waiting:T8" && pass "T9 waiting on T8" || fail "T9 waiting on T8"
+echo "$out" | grep "T1 " | grep -q "epic" && pass "T1 tagged epic" || fail "T1 tagged epic"
+
+out="$(run board-list.sh "done")"
+assert_contains "$out" "T2" "state filter shows done tickets"
+echo "$out" | grep -q "T8" && fail "filter excludes others" || pass "filter excludes others"
+
+out="$(run board-show.sh T8)"
+assert_contains "$out" "Solo ready" "show prints the node"
+assert_contains "$out" "(none bound)" "show reports no bound daemon"
+
+# Fake a bound daemon in the registry, then show finds it
+cat > "$DAEMON_HOME/aaaa1111-0000-0000-0000-000000000001.json" <<'META'
+{"uuid": "aaaa1111-0000-0000-0000-000000000001", "short": "aaaa1111",
+ "name": "t8-worker", "status": "idle", "cwd": "/tmp/x", "worktree": "t8",
+ "ticket": "T8"}
+META
+out="$(run board-show.sh T8)"
+assert_contains "$out" "aaaa1111" "show finds the bound daemon"
+
+assert_fails run board-show.sh T99
+
+# A stray tmp from an interrupted write is ignored by readers (atomicity).
+touch "$BOARD/map.json.tmp"
+run board-list.sh >/dev/null && pass "stray map.json.tmp ignored" || fail "stray map.json.tmp ignored"
+rm -f "$BOARD/map.json.tmp"
+
 # ---- summary -----------------------------------------------------------------
 echo
 if [[ "$FAILURES" -eq 0 ]]; then echo "ALL TESTS PASSED"; else

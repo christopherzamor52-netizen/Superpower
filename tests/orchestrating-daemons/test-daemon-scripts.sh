@@ -350,6 +350,16 @@ assert_contains "$E_META" '"pending_short"' "uuid-less row stashes pending_short
 [ -d "$HOME/.claude/jobs/$E_SHORT" ] && pass "uuid-less row purges nothing" \
     || fail "uuid-less row purges nothing"
 
+# (e2) The SAME uuid-less hole on the spawn side: the first turn's agents row
+# never carries a sessionId → spawn must exit nonzero without registering
+# corrupt meta (the old `read` parsing promoted the "timeout" state token into
+# the uuid slot and created timeout.json).
+S_RC=0
+STUB_NO_UUID=1 "$SCRIPTS_DIR/daemon-spawn.sh" "nouuid-spawn" "seed-s" "$WORK" >/dev/null 2>&1 || S_RC=$?
+[ "$S_RC" -ne 0 ] && pass "spawn with a uuid-less agents row exits nonzero" \
+    || fail "spawn with a uuid-less agents row exits nonzero"
+assert_file_absent "$DAEMON_HOME/timeout.json" "spawn never registers the state token as a uuid"
+
 # (f) _session_purge guards: only an exactly-8-lowercase-hex short is ever
 # rm -rf'ed — malformed input is a no-op, not a deletion.
 mkdir -p "$HOME/.claude/jobs/deadbeef"

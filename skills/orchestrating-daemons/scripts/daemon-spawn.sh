@@ -46,12 +46,25 @@ short="$(printf '%s\n' "$banner" | sed -n 's/.*backgrounded · \([0-9a-f][0-9a-f
 [ -n "$short" ] || { echo "spawn failed — could not parse background id from:" >&2; echo "$banner" >&2; exit 1; }
 
 # Wait for the first turn to finish; capture the UUID, state, and ACTUAL cwd
-# (the worktree path when --worktree was used).
-read -r uuid state runcwd < <(_poll_until_done "$short" "$((DAEMON_TIMEOUT / 2))") || true
-[ -n "$uuid" ] || { echo "spawn: daemon $short never appeared in 'claude agents'" >&2; exit 1; }
+# (the worktree path when --worktree was used). Parse via parameter expansion,
+# not `read` — the watcher's no-uuid timeout line leads with an empty field that
+# word-splitting would collapse, promoting the state token into the uuid slot
+# and registering corrupt meta. Same hardening as daemon-resume.
+poll_rc=0
+poll_out="$(_poll_until_done "$short" "$((DAEMON_TIMEOUT / 2))")" || poll_rc=$?
+uuid="${poll_out%% *}"; rest="${poll_out#* }"
+state="${rest%% *}"; runcwd="${rest#* }"
+[ "$runcwd" = "$rest" ] && runcwd=""
+case "$uuid" in
+  *[!0-9a-f-]*) uuid="" ;;  # defensive: a jumbled poll line is not a session uuid
+esac
+[ -n "$uuid" ] || { echo "spawn: daemon $short produced no usable session uuid" >&2; exit 1; }
 [ -n "$runcwd" ] || runcwd="$cwd"
 
+# A watcher timeout on a live first turn is not a finished turn: record the
+# truth (status=working) — daemon-reply reads the live transcript for it.
 status="idle"; [ "$state" = "blocked" ] && status="blocked"; [ "$state" = "error" ] && status="error"
+[ "$poll_rc" -ne 0 ] && status="working"
 _transcript_reply "$uuid" > "$(_reply_path "$uuid")"
 _meta_set "$uuid" \
   uuid "$uuid" current "$uuid" short "$short" name "$name" task "$task" cwd "$runcwd" \

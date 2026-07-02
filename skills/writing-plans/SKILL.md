@@ -151,6 +151,8 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
+**4. Spec drift:** Planning is the first hostile read of the spec. If planning revealed a spec statement that is wrong — an argument that is actually an output, an infeasible constraint, a misnamed path — fix the spec now and add a line to its `## Revision Notes` (see superpowers:living-specs). Never let the plan silently diverge from the spec.
+
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
 ## Execution Handoff

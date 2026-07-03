@@ -9,6 +9,19 @@ multi_agent = true
 
 This enables `spawn_agent`, `wait_agent`, and `close_agent` for skills like `dispatching-parallel-agents` and `subagent-driven-development`. When using subagent-driven-development, you should always close implementer and reviewer subagents when they have finished all their work.
 
+## Legacy skill vocabulary
+
+Older Superpowers docs may name Claude-style tools directly. In Codex:
+
+| Legacy wording | Codex equivalent |
+| --- | --- |
+| `Skill` | Read the relevant `SKILL.md` from the installed skill roots |
+| `TodoWrite` | Use `update_plan` |
+| `Task` / subagent dispatch | Use `tool_search` to expose multi-agent tools, then use `spawn_agent` / `wait_agent` / `close_agent` when available |
+| `Read`, `Write`, `Edit`, `Bash` | Use the file and shell tools available in the current Codex session |
+
+Common Codex skill roots are `~/.codex/skills` and `~/.agents/skills`.
+
 ## Environment Detection
 
 Skills that create worktrees or finish branches should detect their

@@ -72,5 +72,22 @@ assert_equal(
     "Codex manifest must declare empty hooks {} to suppress hooks/hooks.json auto-discovery",
 )
 
+codex_tools = repo_root / "skills" / "using-superpowers" / "references" / "codex-tools.md"
+if not codex_tools.exists():
+    raise AssertionError("Codex platform reference must exist")
+
+codex_reference = codex_tools.read_text(encoding="utf-8")
+for required_text in [
+    "TodoWrite",
+    "update_plan",
+    "Task",
+    "tool_search",
+    "Skill",
+    "~/.codex/skills",
+    "~/.agents/skills",
+]:
+    if required_text not in codex_reference:
+        raise AssertionError(f"Codex platform reference must document {required_text}")
+
 print("Codex marketplace manifest looks good")
 PY

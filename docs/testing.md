@@ -11,8 +11,13 @@ Live in `tests/`. Currently:
 
 - `tests/brainstorm-server/` — node test suite for the brainstorm server JS code.
 - `tests/opencode/` — bash tests for OpenCode plugin loading, bootstrap caching, and tool registration.
+- `tests/codex/` — Codex plugin manifest and portal package archive checks.
 - `tests/codex-plugin-sync/` — bash sync verification.
 - `tests/kimi/` — bash/Python checks for Kimi plugin manifest wiring.
+- `tests/antigravity/` — CI-safe Antigravity tool-mapping checks.
+- `tests/pi/` — Node tests for the Pi package manifest, lifecycle hooks, and tool mapping reference.
+- `tests/hooks/` — shell tests for SessionStart hook output across harnesses.
+- `tests/shell-lint/` — shell lint wrapper regression tests.
 - `tests/claude-code/test-helpers.sh`, `analyze-token-usage.py` — utilities used by remaining bash tests.
 - `tests/claude-code/test-subagent-driven-development.sh` — agent-can-describe-SDD test (no drill counterpart; tests description-recall, not behavior).
 - `tests/claude-code/test-subagent-driven-development-integration.sh` — extended SDD integration with token analysis (drill covers the YAGNI subset; bash adds commit-count, Claude Code task-tracking, and token telemetry assertions).

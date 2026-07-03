@@ -23,7 +23,7 @@ Run plugin tests via the relevant directory's `run-*.sh` or `npm test`.
 
 ## Skill behavior evals
 
-Live in `evals/`. Drill is the harness; scenarios live at `evals/scenarios/*.yaml`. See `evals/README.md` for setup. Quick start:
+Live in `evals/`. Drill is the harness; scenarios live at `evals/scenarios/*.yaml`. See the [superpowers-evals README](https://github.com/prime-radiant-inc/superpowers-evals/blob/main/README.md) for setup. Quick start:
 
 ```bash
 cd evals

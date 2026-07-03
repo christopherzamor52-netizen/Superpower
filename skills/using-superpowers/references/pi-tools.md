@@ -4,8 +4,20 @@ Skills speak in actions ("dispatch a subagent", "create a todo", "read a file").
 
 | Action skills request | Pi equivalent |
 | --- | --- |
+| `Skill` / read a skill | Use Pi's file-reading capability to read the relevant `SKILL.md` |
+| Read a file | Use the available read-file tool |
+| Write a new file | Use the available write-file tool |
+| Edit an existing file | Use the available edit/patch tool |
+| Run a shell command | Use the available bash/shell command tool |
 | Dispatch a subagent (`Subagent (general-purpose):` template) | Use an installed subagent tool such as `subagent` from `pi-subagents` if available |
 | Task tracking ("create a todo", "mark complete") | Use an installed todo/task tool if available, otherwise track tasks in the plan or `TODO.md` |
+
+## Legacy skill vocabulary
+
+Older Superpowers docs may name Claude-style tools directly. Treat `Skill` as
+"read the skill file", `Task` as the subagent action below, `TodoWrite` as the
+task-list action below, and read/write/edit/bash as the corresponding Pi file or
+shell tools available in the current session.
 
 ## Subagents
 

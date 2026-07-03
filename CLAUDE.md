@@ -113,3 +113,4 @@ Before proposing changes to skill design, workflow philosophy, or architecture, 
 - One problem per PR
 - Test on at least one harness and report results in the environment table
 - Describe the problem you solved, not just what you changed
+- If there is a mature open-source solution available on GitHub/npm/pip, just reuse it instead of implementing it yourself." 

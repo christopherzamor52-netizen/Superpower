@@ -4,8 +4,24 @@ Skills speak in actions ("dispatch a subagent", "create a todo", "read a file").
 
 | Action skills request | Antigravity CLI equivalent |
 |----------------------|----------------------|
+| Read a skill or file | `view_file`; when loading a skill, read its `SKILL.md` with `IsSkillFile: true` |
+| Write a new file | `write_to_file` |
+| Edit an existing file | `replace_file_content` or `multi_replace_file_content` |
+| Run a shell command | `run_command` |
+| Search files | `grep_search` |
 | Dispatch a subagent (`Subagent (general-purpose):` template) | `invoke_subagent` with a built-in `TypeName` — `self` for full-capability work, `research` for read-only (see [Subagent support](#subagent-support)) |
 | Task tracking ("create a todo", "mark complete") | a **task artifact** — `write_to_file` with `IsArtifact: true` and `ArtifactType: "task"` (see [Task tracking](#task-tracking)). **Not** `manage_task`, which manages background processes. |
+
+## Skill loading
+
+Antigravity has no `Skill` tool. When a skill applies, read that skill's
+`SKILL.md` with `view_file` and set `IsSkillFile: true`, then follow the
+instructions from the file.
+
+## Subagent support
+
+Use `invoke_subagent` with Antigravity's built-in `self` type for
+full-capability implementation work and `research` for read-only investigation.
 
 ## Task tracking
 

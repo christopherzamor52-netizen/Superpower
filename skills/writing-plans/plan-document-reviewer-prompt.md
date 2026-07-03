@@ -19,8 +19,11 @@ Subagent (general-purpose):
 
     | Category | What to Look For |
     |----------|------------------|
+    | Plan Contract | A Superpowers implementation plan has the required header, alternatives, and pre-mortem even when the prompt asked for "just tasks" |
     | Completeness | TODOs, placeholders, incomplete tasks, missing steps |
     | Spec Alignment | Plan covers spec requirements, no major scope creep |
+    | Alternatives | Viable alternatives are listed at risk-appropriate depth: exactly 5 for non-trivial/risky work unless fewer are explicitly justified; chosen path and strongest rejected option are present |
+    | Pre-Mortem | Material invariants and adjacent cases are named and mapped to a task/test, explicit non-goal, or WATCH item |
     | Task Decomposition | Tasks have clear boundaries, steps are actionable |
     | Buildability | Could an engineer follow this plan without getting stuck? |
 
@@ -30,8 +33,9 @@ Subagent (general-purpose):
     An implementer building the wrong thing or getting stuck is an issue.
     Minor wording, stylistic preferences, and "nice to have" suggestions are not.
 
-    Approve unless there are serious gaps — missing requirements from the spec,
-    contradictory steps, placeholder content, or tasks so vague they can't be acted on.
+    Approve unless there are serious gaps — missing required plan sections, missing requirements from the spec,
+    contradictory steps, placeholder content, missing/perfunctory alternatives or fewer than 5 unjustified alternatives for a non-trivial plan,
+    unmapped material edge cases, or tasks so vague they can't be acted on.
 
     ## Output Format
 

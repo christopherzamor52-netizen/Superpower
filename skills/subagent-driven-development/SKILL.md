@@ -234,7 +234,7 @@ and is re-read on every later turn. Hand artifacts over as files:
   report contract. Exact values (numbers, magic strings, signatures, test
   cases) appear only in the brief.
 - **Report file:** name the implementer's report file after the brief
-  (brief `…/task-N-brief.md` → report `…/task-N-report.md`) and put it in
+  (brief `…/<plan-slug>/task-N-brief.md` → report `…/<plan-slug>/task-N-report.md`) and put it in
   the dispatch prompt. The implementer writes the full report there and
   returns only status, commits, a one-line test summary, and concerns.
 - **Reviewer inputs:** the task reviewer gets three paths — the same brief

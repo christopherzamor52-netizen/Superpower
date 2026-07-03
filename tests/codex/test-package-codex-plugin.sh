@@ -136,8 +136,10 @@ echo "Codex package archive tests"
 metadata_source="$TEST_ROOT/metadata-source"
 archive="$TEST_ROOT/superpowers"
 tar_archive="$TEST_ROOT/superpowers.tar.gz"
+worktree_archive="$TEST_ROOT/superpowers-from-worktree.zip"
 extracted="$TEST_ROOT/extracted"
 tar_extracted="$TEST_ROOT/tar-extracted"
+linked_worktree="$TEST_ROOT/linked-worktree"
 write_metadata_fixture "$metadata_source"
 
 source_hooks="$(python3 -c 'import json; print(json.load(open("'"$REPO_ROOT"'/.codex-plugin/plugin.json")).get("hooks"))')"
@@ -159,6 +161,17 @@ fi
 assert_contains "$output" "Archive:" "reports archive path"
 assert_contains "$output" "Format:  zip" "reports default zip format"
 assert_contains "$output" "SHA-256:" "reports archive checksum"
+
+if git -C "$REPO_ROOT" worktree add --detach "$linked_worktree" HEAD >/dev/null 2>&1; then
+  if output="$("$linked_worktree/scripts/package-codex-plugin.sh" --metadata-source "$metadata_source" --output "$worktree_archive" 2>&1)"; then
+    pass "package script accepts a linked worktree checkout"
+  else
+    fail "package script accepts a linked worktree checkout"
+    printf '%s\n' "$output" | sed 's/^/      /'
+  fi
+else
+  fail "create linked worktree fixture"
+fi
 
 extract_archive "$archive" "$extracted"
 

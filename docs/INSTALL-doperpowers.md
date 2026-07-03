@@ -1,12 +1,12 @@
 # Installing doperpowers
 
-`doperpowers` is a personal fork of [Superpowers](https://github.com/obra/superpowers)
+`doperpowers` is a personal fork of [Doperpowers](https://github.com/obra/superpowers)
 by Jesse Vincent (MIT-licensed), with fork-specific skills such as
 `orchestrating-daemons`, `issue-register`, `codebase-design`, and `domain-modeling`
 on top of the full brainstorm → plan → subagent-driven-TDD → review methodology.
 
 It ships as its own Claude Code plugin from a self-hosted marketplace in this repo,
-so it installs **side by side** with upstream Superpowers.
+so it installs **side by side** with upstream Doperpowers.
 
 ## Claude Code
 
@@ -30,7 +30,7 @@ Update later:
 ## Coexisting with upstream
 
 Plugin identity is namespaced as `plugin@marketplace`, so `doperpowers@doperpowers`
-and any upstream `superpowers@superpowers-marketplace` (or
-`superpowers@claude-plugins-official`) can both be installed at once without
+and any upstream `doperpowers@doperpowers-marketplace` (or
+`doperpowers@claude-plugins-official`) can both be installed at once without
 colliding. The marketplace name (`doperpowers`) is distinct from upstream's
-`superpowers-dev`, so adding this one never replaces upstream's.
+`doperpowers-dev`, so adding this one never replaces upstream's.

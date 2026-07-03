@@ -18,22 +18,22 @@ add a comment or reaction to the existing one instead.
 
 | Field | Value |
 |-------|-------|
-| Superpowers version | |
+| Doperpowers version | |
 | Harness (Claude Code, Cursor, etc.) | |
 | Harness version | |
 | Your model + version | |
 | All plugins installed | |
 | OS + shell | |
 
-## Is this a Superpowers issue or a platform issue?
-<!-- Superpowers is a plugin. Some reported "bugs" are actually issues
+## Is this a Doperpowers issue or a platform issue?
+<!-- Doperpowers is a plugin. Some reported "bugs" are actually issues
      in the underlying platform or model. If you're not sure, try
-     reproducing without Superpowers installed.
+     reproducing without Doperpowers installed.
 
-     If the problem persists without Superpowers, file the issue with
+     If the problem persists without Doperpowers, file the issue with
      your platform instead. -->
 
-- [ ] I confirmed this issue does not occur without Superpowers installed
+- [ ] I confirmed this issue does not occur without Doperpowers installed
 
 ## What happened?
 <!-- Be specific. "It doesn't work" is not a bug report. -->

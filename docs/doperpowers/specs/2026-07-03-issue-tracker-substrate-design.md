@@ -141,7 +141,7 @@ category: enhancement
 ```
 
 - **No `state` in frontmatter** — single source of truth is `map.json`.
-- **Written only by the orchestrator**: at registration, and a terminal outcome summary appended at `done`/`wontfix`. Workers *read* it; their specs/plans go to their own worktree's `docs/superpowers/` as usual.
+- **Written only by the orchestrator**: at registration, and a terminal outcome summary appended at `done`/`wontfix`. Workers *read* it; their specs/plans go to their own worktree's `docs/doperpowers/` as usual.
 
 ## 7. Dispatch flow (orchestrator procedure, in SKILL.md)
 

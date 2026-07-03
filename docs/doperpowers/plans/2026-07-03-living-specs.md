@@ -1,21 +1,21 @@
 # Living Specs Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use doperpowers:subagent-driven-development (recommended) or doperpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** A `living-specs` skill (adapter over the vendored `references/PLANS.md`) plus four one-point hooks so every spec carries a maintained living tail — Decision Log with rejected alternatives, Surprises & Discoveries, Outcomes & Retrospective, Revision Notes — from brainstorm to merge.
 
-**Architecture:** One new skill directory `skills/living-specs/` holds the doctrine; `references/PLANS.md` (already committed, char-for-char vendor) is scripture, `SKILL.md` is the adapter saying what binds, what is superseded, and the four update triggers. Four existing skills each gain a small insertion referencing `superpowers:living-specs` at the exact lifecycle moment they own.
+**Architecture:** One new skill directory `skills/living-specs/` holds the doctrine; `references/PLANS.md` (already committed, char-for-char vendor) is scripture, `SKILL.md` is the adapter saying what binds, what is superseded, and the four update triggers. Four existing skills each gain a small insertion referencing `doperpowers:living-specs` at the exact lifecycle moment they own.
 
 **Tech Stack:** Markdown only. No code, no scripts, no new tests (verification is grep-based; behavioral acceptance happens on the next real feature).
 
-**Spec:** `docs/superpowers/specs/2026-07-03-living-specs-design.md` — read it before starting; its Disposition map is the authority on what PLANS.md content binds.
+**Spec:** `docs/doperpowers/specs/2026-07-03-living-specs-design.md` — read it before starting; its Disposition map is the authority on what PLANS.md content binds.
 
 ## Global Constraints
 
 - `skills/living-specs/references/PLANS.md` is vendored char-for-char and MUST NOT be modified by any task. At the end, `git log --oneline -- skills/living-specs/references/PLANS.md` shows exactly one commit (the spec commit `9496bde`).
 - Files touched: create `skills/living-specs/SKILL.md`; modify only `skills/brainstorming/SKILL.md`, `skills/writing-plans/SKILL.md`, `skills/subagent-driven-development/SKILL.md`, `skills/finishing-a-development-branch/SKILL.md`. Nothing else.
 - The living-tail headings are exactly: `## Decision Log`, `## Surprises & Discoveries`, `## Outcomes & Retrospective`, `## Revision Notes`.
-- Every hook names the skill as `superpowers:living-specs` (that literal string is what the verification greps for).
+- Every hook names the skill as `doperpowers:living-specs` (that literal string is what the verification greps for).
 - Any PLANS.md guidance quoted in SKILL.md must be verbatim from `references/PLANS.md` — no rewording (spec Decision Log, decision 3).
 - Skill frontmatter: `name: living-specs`; description begins "Use when" (repo convention).
 - Commit after every task. No `Co-Authored-By` / attribution lines in commit messages.
@@ -40,7 +40,7 @@ skills/finishing-a-development-branch/SKILL.md  # hook: retrospective before mer
 - Create: `skills/living-specs/SKILL.md`
 
 **Interfaces:**
-- Produces: the skill name `superpowers:living-specs` that Tasks 2-5 reference; the four living-tail headings (`## Decision Log`, `## Surprises & Discoveries`, `## Outcomes & Retrospective`, `## Revision Notes`); the "Pending — written at finish." placeholder convention; the two entry formats (`Decision:/Rationale:/Date/Author:` and `Observation:/Evidence:`).
+- Produces: the skill name `doperpowers:living-specs` that Tasks 2-5 reference; the four living-tail headings (`## Decision Log`, `## Surprises & Discoveries`, `## Outcomes & Retrospective`, `## Revision Notes`); the "Pending — written at finish." placeholder convention; the two entry formats (`Decision:/Rationale:/Date/Author:` and `Observation:/Evidence:`).
 - Consumes: `references/PLANS.md` (already on disk at `skills/living-specs/references/PLANS.md`).
 
 - [ ] **Step 1: Write the file**
@@ -50,7 +50,7 @@ Create `skills/living-specs/SKILL.md` with exactly this content:
 ````markdown
 ---
 name: living-specs
-description: Use when writing, revising, or closing out a design spec (docs/superpowers/specs/) — the living-spec doctrine, vendored from Codex ExecPlans: Decision Log with rejected alternatives, Surprises & Discoveries with evidence, retrospective at finish, revision notes, behavior-phrased acceptance
+description: Use when writing, revising, or closing out a design spec (docs/doperpowers/specs/) — the living-spec doctrine, vendored from Codex ExecPlans: Decision Log with rejected alternatives, Surprises & Discoveries with evidence, retrospective at finish, revision notes, behavior-phrased acceptance
 ---
 
 # Living Specs
@@ -59,7 +59,7 @@ description: Use when writing, revising, or closing out a design spec (docs/supe
 
 A spec is not a snapshot of an approval — it is the design's single source of truth for the whole life of its feature. Decisions carry their rationale and their rejected alternatives, discoveries made while planning and building flow back into the document, and the feature closes with a retrospective.
 
-The norms come from Codex's ExecPlan doctrine, vendored char-for-char at [references/PLANS.md](references/PLANS.md). That file is the source; this file is the adapter that says which parts bind at the spec layer, which are superseded by superpowers machinery, and when the spec gets updated. Where a section binds, follow the original text — details die in paraphrase.
+The norms come from Codex's ExecPlan doctrine, vendored char-for-char at [references/PLANS.md](references/PLANS.md). That file is the source; this file is the adapter that says which parts bind at the spec layer, which are superseded by doperpowers machinery, and when the spec gets updated. Where a section binds, follow the original text — details die in paraphrase.
 
 **The bar (recalibrated from PLANS.md's novice standard):** a fresh session with no conversation history can pick up the spec and continue the work — decisions, their whys, and everything learned so far included. Define terms of art; reference repo common knowledge instead of duplicating it.
 
@@ -70,20 +70,20 @@ The norms come from Codex's ExecPlan doctrine, vendored char-for-char at [refere
 - **"Self-containment and plain language are paramount"** (Guidelines): define jargon on first use; name files with full repository-relative paths.
 - **"Anchor the plan with observable outcomes"** (Guidelines): acceptance is phrased as behavior a human can verify, with exact commands and expected output — never internal attributes.
 - **"Living plans and design decisions"** — all five bullets, with the spec as the target document (Progress excepted; see below).
-- **"Prototyping milestones and parallel implementations"**: when unknowns are large, the spec declares spike milestones — how to run and observe results, and "the criteria for promoting or discarding the prototype". superpowers:writing-plans turns them into spike tasks.
+- **"Prototyping milestones and parallel implementations"**: when unknowns are large, the spec declares spike milestones — how to run and observe results, and "the criteria for promoting or discarding the prototype". doperpowers:writing-plans turns them into spike tasks.
 
 ## What does NOT bind — superseded, do not import
 
 | PLANS.md directive | Superseded by |
 |---|---|
-| "do not prompt the user for 'next steps'…Resolve ambiguities autonomously" | Human gates: design approval and spec review in superpowers:brainstorming |
+| "do not prompt the user for 'next steps'…Resolve ambiguities autonomously" | Human gates: design approval and spec review in doperpowers:brainstorming |
 | Single fenced code block, prose-first, no tables or checklists | Specs are files, not chat payloads; use tables/JSON/diagrams wherever they beat prose for precision |
 | Mandatory `Progress` section with timestamped checkboxes | The SDD ledger + git + plan checkboxes — externally verifiable, not self-report |
-| Milestones narrative, Concrete Steps, Interfaces and Dependencies | superpowers:writing-plans, with complete code and exact commands |
+| Milestones narrative, Concrete Steps, Interfaces and Dependencies | doperpowers:writing-plans, with complete code and exact commands |
 | Idempotence and Recovery section | Worktree isolation + git |
 | Self-contained "for a complete novice" | The fresh-session bar in the Overview above |
 
-These rejections carry rationale — read the Decision Log in `docs/superpowers/specs/2026-07-03-living-specs-design.md` before re-proposing one.
+These rejections carry rationale — read the Decision Log in `docs/doperpowers/specs/2026-07-03-living-specs-design.md` before re-proposing one.
 
 ## The living tail
 
@@ -104,16 +104,16 @@ Seed it at brainstorm time with the chosen approach AND each rejected alternativ
 
 For anything that changed design understanding: an assumption that proved false, a measured behavior, a constraint discovered during planning or execution. Short evidence snippets — test output is ideal. Incidental implementation noise belongs in commit messages, not here.
 
-**`## Outcomes & Retrospective`** — until finish, exactly the line "Pending — written at finish." At finish (superpowers:finishing-a-development-branch triggers this), summarize what was achieved against the spec's original purpose, what remains, and lessons learned.
+**`## Outcomes & Retrospective`** — until finish, exactly the line "Pending — written at finish." At finish (doperpowers:finishing-a-development-branch triggers this), summarize what was achieved against the spec's original purpose, what remains, and lessons learned.
 
 **`## Revision Notes`** — one dated line per spec revision describing what changed and why (PLANS.md's bottom-note rule: "you must write a note at the bottom of the plan describing the change and the reason why"). When you revise, keep the whole document consistent — reflect the change across sections, not just where convenient.
 
 ## Update triggers
 
-- **Brainstorm end** (superpowers:brainstorming): spec written in this shape, Decision Log seeded, committed.
-- **Plan-writing** (superpowers:writing-plans Self-Review): planning is the first hostile read of the spec. If a spec statement proved wrong, fix the spec now and add a Revision Note — never let the plan silently diverge.
-- **Execution** (superpowers:subagent-driven-development bookkeeping): task reports that change design understanding get routed into Surprises & Discoveries or the Decision Log in the same message as the ledger append.
-- **Finish** (superpowers:finishing-a-development-branch): write Outcomes & Retrospective and commit it before presenting merge options.
+- **Brainstorm end** (doperpowers:brainstorming): spec written in this shape, Decision Log seeded, committed.
+- **Plan-writing** (doperpowers:writing-plans Self-Review): planning is the first hostile read of the spec. If a spec statement proved wrong, fix the spec now and add a Revision Note — never let the plan silently diverge.
+- **Execution** (doperpowers:subagent-driven-development bookkeeping): task reports that change design understanding get routed into Surprises & Discoveries or the Decision Log in the same message as the ledger append.
+- **Finish** (doperpowers:finishing-a-development-branch): write Outcomes & Retrospective and commit it before presenting merge options.
 
 Whoever drives the session maintains the spec. There are no writer rules — in practice one spec has one working agent.
 
@@ -148,20 +148,20 @@ git commit -m "living-specs: adapter skill over vendored ExecPlan doctrine"
 - Modify: `skills/brainstorming/SKILL.md` (three insertions: checklist item 6, Documentation bullets, Spec Self-Review item 5)
 
 **Interfaces:**
-- Consumes: `superpowers:living-specs` (Task 1) and the living-tail heading names.
+- Consumes: `doperpowers:living-specs` (Task 1) and the living-tail heading names.
 
 - [ ] **Step 1: Update checklist item 6**
 
 Replace:
 
 ```markdown
-6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
+6. **Write design doc** — save to `docs/doperpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
 ```
 
 with:
 
 ```markdown
-6. **Write design doc** — in living-spec shape per superpowers:living-specs (purpose-first opening, behavior-phrased acceptance, living tail with the Decision Log seeded from step 4's alternatives); save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
+6. **Write design doc** — in living-spec shape per doperpowers:living-specs (purpose-first opening, behavior-phrased acceptance, living tail with the Decision Log seeded from step 4's alternatives); save to `docs/doperpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
 ```
 
 - [ ] **Step 2: Update the Documentation bullets**
@@ -169,7 +169,7 @@ with:
 Replace:
 
 ```markdown
-- Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
+- Write the validated design (spec) to `docs/doperpowers/specs/YYYY-MM-DD-<topic>-design.md`
   - (User preferences for spec location override this default)
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
@@ -178,9 +178,9 @@ Replace:
 with:
 
 ```markdown
-- Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
+- Write the validated design (spec) to `docs/doperpowers/specs/YYYY-MM-DD-<topic>-design.md`
   - (User preferences for spec location override this default)
-- Shape it per superpowers:living-specs: purpose-first opening, acceptance phrased as observable behavior, and the living tail (`## Decision Log`, `## Surprises & Discoveries`, `## Outcomes & Retrospective` reading "Pending — written at finish.", `## Revision Notes`)
+- Shape it per doperpowers:living-specs: purpose-first opening, acceptance phrased as observable behavior, and the living tail (`## Decision Log`, `## Surprises & Discoveries`, `## Outcomes & Retrospective` reading "Pending — written at finish.", `## Revision Notes`)
 - Seed the Decision Log with the chosen approach and each rejected alternative from the approaches step, with why it lost — they are already generated; capturing them is free
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
@@ -222,7 +222,7 @@ git commit -m "brainstorming: write specs in living-spec shape, seed the Decisio
 - Modify: `skills/writing-plans/SKILL.md` (one insertion in Self-Review)
 
 **Interfaces:**
-- Consumes: `superpowers:living-specs` (Task 1), Revision Notes convention.
+- Consumes: `doperpowers:living-specs` (Task 1), Revision Notes convention.
 
 - [ ] **Step 1: Add Self-Review check 4**
 
@@ -239,7 +239,7 @@ with:
 ```markdown
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
-**4. Spec drift:** Planning is the first hostile read of the spec. If planning revealed a spec statement that is wrong — an argument that is actually an output, an infeasible constraint, a misnamed path — fix the spec now and add a line to its `## Revision Notes` (see superpowers:living-specs). Never let the plan silently diverge from the spec.
+**4. Spec drift:** Planning is the first hostile read of the spec. If planning revealed a spec statement that is wrong — an argument that is actually an output, an infeasible constraint, a misnamed path — fix the spec now and add a line to its `## Revision Notes` (see doperpowers:living-specs). Never let the plan silently diverge from the spec.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 ```
@@ -262,7 +262,7 @@ git commit -m "writing-plans: self-review check 4 — fix spec drift found while
 - Modify: `skills/subagent-driven-development/SKILL.md` (one bullet in Durable Progress)
 
 **Interfaces:**
-- Consumes: `superpowers:living-specs` (Task 1), Surprises & Discoveries / Decision Log headings.
+- Consumes: `doperpowers:living-specs` (Task 1), Surprises & Discoveries / Decision Log headings.
 
 - [ ] **Step 1: Add the routing bullet**
 
@@ -284,7 +284,7 @@ with:
   that changed design understanding — an assumption that proved false, a
   constraint discovered, a mid-course design decision — into the spec's
   `## Surprises & Discoveries` or `## Decision Log`
-  (superpowers:living-specs). Implementation noise stays in commit
+  (doperpowers:living-specs). Implementation noise stays in commit
   messages, not the spec.
 ```
 
@@ -306,7 +306,7 @@ git commit -m "sdd: route design-relevant discoveries into the spec at bookkeepi
 - Modify: `skills/finishing-a-development-branch/SKILL.md` (core principle line + Step 1 tests-pass line)
 
 **Interfaces:**
-- Consumes: `superpowers:living-specs` (Task 1), Outcomes & Retrospective convention.
+- Consumes: `doperpowers:living-specs` (Task 1), Outcomes & Retrospective convention.
 
 - [ ] **Step 1: Update the core principle line**
 
@@ -333,7 +333,7 @@ Replace:
 with:
 
 ```markdown
-**If tests pass:** Write the spec's `## Outcomes & Retrospective` entry — what was achieved against the spec's original purpose, gaps, lessons learned (superpowers:living-specs) — replacing its "Pending — written at finish." line, and commit it so the retrospective rides the branch into the merge. Then continue to Step 2.
+**If tests pass:** Write the spec's `## Outcomes & Retrospective` entry — what was achieved against the spec's original purpose, gaps, lessons learned (doperpowers:living-specs) — replacing its "Pending — written at finish." line, and commit it so the retrospective rides the branch into the merge. Then continue to Step 2.
 ```
 
 - [ ] **Step 3: Verify and commit**
@@ -365,7 +365,7 @@ Expected: exactly one commit (`9496bde spec: living-specs — vendor ExecPlan do
 
 - [ ] **Step 2: The first living spec conforms to the doctrine it ships**
 
-Run: `grep -n '^## Decision Log\|^## Surprises & Discoveries\|^## Outcomes & Retrospective\|^## Revision Notes' docs/superpowers/specs/2026-07-03-living-specs-design.md`
+Run: `grep -n '^## Decision Log\|^## Surprises & Discoveries\|^## Outcomes & Retrospective\|^## Revision Notes' docs/doperpowers/specs/2026-07-03-living-specs-design.md`
 Expected: four hits, in that order.
 
 - [ ] **Step 3: Nothing else changed**

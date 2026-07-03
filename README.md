@@ -1,17 +1,17 @@
-# Superpowers
+# Doperpowers
 
-Superpowers is a complete software development methodology for your coding agents, built on top of a set of composable skills and some initial instructions that make sure your agent uses them.
+Doperpowers is a complete software development methodology for your coding agents, built on top of a set of composable skills and some initial instructions that make sure your agent uses them.
 
 
 ## We're Hiring!
 
-We're hiring someone to help out full time with Superpowers community and code work. 
-You can read about the job at https://primeradiant.com/jobs/superpowers-community-engineer/
+We're hiring someone to help out full time with Doperpowers community and code work. 
+You can read about the job at https://primeradiant.com/jobs/doperpowers-community-engineer/
 If this sounds like someone you know, definitely send them our way.
 
 ## Quickstart
 
-Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
+Give your agent Doperpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
 
 ## How it works
 
@@ -23,31 +23,31 @@ After you've signed off on the design, your agent puts together an implementatio
 
 Next up, once you say "go", it launches a *subagent-driven-development* process, having agents work through each engineering task, inspecting and reviewing their work, and continuing forward. It's not uncommon for your agent to work autonomously for a couple hours at a time without deviating from the plan you put together.
 
-There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your coding agent just has Superpowers.
+There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your coding agent just has Doperpowers.
 
 ## Commercial Services
 
-If you're using Superpowers in enterprise and could benefit from commercial support, additional tooling, or managed spending, please don't hesitate to drop us a line at sales@primeradiant.com.
+If you're using Doperpowers in enterprise and could benefit from commercial support, additional tooling, or managed spending, please don't hesitate to drop us a line at sales@primeradiant.com.
 
 ## Installation
 
-Installation differs by harness. If you use more than one, install Superpowers separately for each one.
+Installation differs by harness. If you use more than one, install Doperpowers separately for each one.
 
 ### Claude Code
 
-Superpowers is available via the [official Claude plugin marketplace](https://claude.com/plugins/superpowers)
+Doperpowers is available via the [official Claude plugin marketplace](https://claude.com/plugins/superpowers)
 
 #### Official Marketplace
 
 - Install the plugin from Anthropic's official marketplace:
 
   ```bash
-  /plugin install superpowers@claude-plugins-official
+  /plugin install doperpowers@claude-plugins-official
   ```
 
-#### Superpowers Marketplace
+#### Doperpowers Marketplace
 
-The Superpowers marketplace provides Superpowers and some other related plugins for Claude Code.
+The Doperpowers marketplace provides Doperpowers and some other related plugins for Claude Code.
 
 - Register the marketplace:
 
@@ -58,31 +58,31 @@ The Superpowers marketplace provides Superpowers and some other related plugins 
 - Install the plugin from this marketplace:
 
   ```bash
-  /plugin install superpowers@superpowers-marketplace
+  /plugin install doperpowers@doperpowers-marketplace
   ```
 
 ### Antigravity
 
-Install Superpowers as a plugin from this repository:
+Install Doperpowers as a plugin from this repository:
 
 ```bash
 agy plugin install https://github.com/obra/superpowers
 ```
 
-Antigravity runs the plugin's session-start hook, so Superpowers is active from
+Antigravity runs the plugin's session-start hook, so Doperpowers is active from
 the first message. Reinstall with the same command to update.
 
 ### Codex App
 
-Superpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
+Doperpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
 
 - In the Codex app, click on Plugins in the sidebar.
-- You should see `Superpowers` in the Coding section.
-- Click the `+` next to Superpowers and follow the prompts.
+- You should see `Doperpowers` in the Coding section.
+- Click the `+` next to Doperpowers and follow the prompts.
 
 ### Codex CLI
 
-Superpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
+Doperpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
 
 - Open the plugin search interface:
 
@@ -90,10 +90,10 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
   /plugins
   ```
 
-- Search for Superpowers:
+- Search for Doperpowers:
 
   ```bash
-  superpowers
+  doperpowers
   ```
 
 - Select `Install Plugin`.
@@ -103,10 +103,10 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 - In Cursor Agent chat, install from marketplace:
 
   ```text
-  /add-plugin superpowers
+  /add-plugin doperpowers
   ```
 
-- Or search for "superpowers" in the plugin marketplace.
+- Or search for "doperpowers" in the plugin marketplace.
 
 ### Factory Droid
 
@@ -119,7 +119,7 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 - Install the plugin:
 
   ```bash
-  droid plugin install superpowers@superpowers
+  droid plugin install doperpowers@doperpowers
   ```
 
 ### GitHub Copilot CLI
@@ -133,12 +133,12 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 - Install the plugin:
 
   ```bash
-  copilot plugin install superpowers@superpowers-marketplace
+  copilot plugin install doperpowers@doperpowers-marketplace
   ```
 
 ### Kimi Code
 
-Superpowers is available in Kimi Code's plugin marketplace.
+Doperpowers is available in Kimi Code's plugin marketplace.
 
 - Open Kimi Code's plugin manager:
 
@@ -146,7 +146,7 @@ Superpowers is available in Kimi Code's plugin marketplace.
   /plugins
   ```
 
-- Go to `Marketplace` > `Superpowers` and install it.
+- Go to `Marketplace` > `Doperpowers` and install it.
 
 - Or install directly from this repository:
 
@@ -158,7 +158,7 @@ Superpowers is available in Kimi Code's plugin marketplace.
 
 ### OpenCode
 
-OpenCode uses its own plugin install; install Superpowers separately even if you
+OpenCode uses its own plugin install; install Doperpowers separately even if you
 already use it in another harness.
 
 - Tell OpenCode:
@@ -171,7 +171,7 @@ already use it in another harness.
 
 ### Pi
 
-Install Superpowers as a Pi package from this repository:
+Install Doperpowers as a Pi package from this repository:
 
 ```bash
 pi install git:github.com/obra/superpowers
@@ -180,10 +180,10 @@ pi install git:github.com/obra/superpowers
 For local development, run Pi with this checkout loaded as a temporary package:
 
 ```bash
-pi -e /path/to/superpowers
+pi -e /path/to/doperpowers
 ```
 
-The Pi package loads the Superpowers skills and a small extension that injects the `using-superpowers` bootstrap at session startup and again after compaction. Pi has native skills, so no compatibility `Skill` tool is required. Subagent and task-list tools remain optional Pi companion packages.
+The Pi package loads the Doperpowers skills and a small extension that injects the `using-doperpowers` bootstrap at session startup and again after compaction. Pi has native skills, so no compatibility `Skill` tool is required. Subagent and task-list tools remain optional Pi companion packages.
 
 ## The Basic Workflow
 
@@ -227,7 +227,7 @@ The Pi package loads the Superpowers skills and a small extension that injects t
 
 **Meta**
 - **writing-skills** - Create new skills following best practices (includes testing methodology)
-- **using-superpowers** - Introduction to the skills system
+- **using-doperpowers** - Introduction to the skills system
 
 ## Philosophy
 
@@ -240,7 +240,7 @@ Read [the original release announcement](https://blog.fsck.com/2025/10/09/superp
 
 ## Contributing
 
-The general contribution process for Superpowers is below. Keep in mind that we don't generally accept contributions of new skills and that any updates to skills must work across all of the coding agents we support.
+The general contribution process for Doperpowers is below. Keep in mind that we don't generally accept contributions of new skills and that any updates to skills must work across all of the coding agents we support.
 
 1. Fork the repository
 2. Switch to the 'dev' branch
@@ -254,7 +254,7 @@ See `skills/writing-skills/SKILL.md` for the complete guide.
 
 ## Updating
 
-Superpowers updates are somewhat coding-agent dependent, but are often automatic.
+Doperpowers updates are somewhat coding-agent dependent, but are often automatic.
 
 ## License
 
@@ -262,12 +262,12 @@ MIT License - see LICENSE file for details
 
 ## Visual companion telemetry
 
-Because skills and plugins don't provide any feedback to creators, we have no idea how many of you are using Superpowers. By default, the Prime Radiant logo on brainstorming's optional visual companion feature is loaded from our website. It includes the version of Superpowers in use. It does not include any details about your project, prompt, or coding agent. We don't see your clicks or anything about what you're building. This helps us have a rough idea of how many folks are using Superpowers and which version of Superpowers they're using. It's 100% optional. To disable this, set the environment variable `SUPERPOWERS_DISABLE_TELEMETRY` to any true value. Superpowers also honors Claude Code's `DISABLE_TELEMETRY` and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` opt-outs.
+Because skills and plugins don't provide any feedback to creators, we have no idea how many of you are using Doperpowers. By default, the Prime Radiant logo on brainstorming's optional visual companion feature is loaded from our website. It includes the version of Doperpowers in use. It does not include any details about your project, prompt, or coding agent. We don't see your clicks or anything about what you're building. This helps us have a rough idea of how many folks are using Doperpowers and which version of Doperpowers they're using. It's 100% optional. To disable this, set the environment variable `DOPERPOWERS_DISABLE_TELEMETRY` to any true value. Doperpowers also honors Claude Code's `DISABLE_TELEMETRY` and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` opt-outs.
 
 ## Community
 
-Superpowers is built by [Jesse Vincent](https://blog.fsck.com) and the rest of the folks at [Prime Radiant](https://primeradiant.com).
+Doperpowers is built by [Jesse Vincent](https://blog.fsck.com) and the rest of the folks at [Prime Radiant](https://primeradiant.com).
 
-- **Discord**: [Join us](https://discord.gg/35wsABTejz) for community support, questions, and sharing what you're building with Superpowers
+- **Discord**: [Join us](https://discord.gg/35wsABTejz) for community support, questions, and sharing what you're building with Doperpowers
 - **Issues**: https://github.com/obra/superpowers/issues
-- **Release announcements**: [Sign up](https://primeradiant.com/superpowers/) to get notified about new versions
+- **Release announcements**: [Sign up](https://primeradiant.com/doperpowers/) to get notified about new versions

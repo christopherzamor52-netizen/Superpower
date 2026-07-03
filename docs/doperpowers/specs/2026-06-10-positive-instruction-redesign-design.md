@@ -126,7 +126,7 @@ before/after text, and the V2 relocation rationale.
 
 `/tmp/sdd-exp/micro/run-micro.py` and `/tmp/sdd-exp/micro2/run-micro2.py`
 (2026-06-10; to be committed to superpowers-evals as
-`docs/superpowers/skills/micro-testing-prompt-guidance.md` + scripts):
+`docs/doperpowers/skills/micro-testing-prompt-guidance.md` + scripts):
 
 - One API call per sample: system prompt = the skill-guidance variant in
   realistic surrounding context; user = a realistic mid-workflow scenario;

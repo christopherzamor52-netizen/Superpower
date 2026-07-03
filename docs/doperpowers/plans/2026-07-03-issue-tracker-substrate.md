@@ -1,6 +1,6 @@
 # Issue-Tracker Substrate Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use doperpowers:subagent-driven-development (recommended) or doperpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** A local JSON issue board (`doperpowers/issue-tracker/` in the consumer repo) with a bash+python3 script toolkit, an orchestrator skill, and an `issue-register` that emits tickets onto it.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** bash (macOS 3.2-compatible) + inline python3 stdlib. Zero dependencies.
 
-**Spec:** `docs/superpowers/specs/2026-07-03-issue-tracker-substrate-design.md` — read it before starting.
+**Spec:** `docs/doperpowers/specs/2026-07-03-issue-tracker-substrate-design.md` — read it before starting.
 
 ## Global Constraints
 

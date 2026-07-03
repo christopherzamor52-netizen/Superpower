@@ -14,7 +14,7 @@ grill (Matt Pocock's grilling, vendored; domain-modeling's interview moves absor
 One new skill, `skills/execplan/SKILL.md`, carries the whole track. No hooks into existing skills — the track is an alternative *entry*, not a modification of the default pipeline.
 
 - **Grill step**: MP's grilling text vendored verbatim (10 lines, attributed), plus three interview moves kept from domain-modeling (sharpen fuzzy terms, stress-test with concrete scenarios, cross-reference claims with code). All output lands in the ExecPlan: definitions inline, decisions in its Decision Log. No CONTEXT.md, no ADRs.
-- **Authoring step**: the SAME vendored PLANS.md that execspec adapts is here consumed unmodified — including the clauses the execspec adapter supersedes for the controlled track (Progress, milestones, novice-grade self-containment, autonomous ambiguity resolution). One vendor point, two consumption modes. ExecPlans live at `docs/superpowers/execplans/YYYY-MM-DD-<topic>.md`.
+- **Authoring step**: the SAME vendored PLANS.md that execspec adapts is here consumed unmodified — including the clauses the execspec adapter supersedes for the controlled track (Progress, milestones, novice-grade self-containment, autonomous ambiguity resolution). One vendor point, two consumption modes. ExecPlans live at `docs/doperpowers/execplans/YYYY-MM-DD-<topic>.md`.
 - **Execution step**: PLANS.md's implementing contract as written — no next-step prompts, living sections current at every stopping point, frequent commits — in an isolated worktree. Daemon-compatible by construction (the ExecPlan is exactly what a spawn prompt can carry and survives context death); v1 notes the fit, mandates nothing.
 - **Exit gate**: exactly one — the final whole-branch review before merge; finishing's retrospective step writes into the ExecPlan's own `Outcomes & Retrospective` section (the ExecPlan is this track's spec-equivalent).
 
@@ -29,7 +29,7 @@ The execspec pipeline and its four hooks; the vendored PLANS.md (still one copy,
 - `ls skills/execplan/` → `SKILL.md`
 - `grep -c "execspec/references/PLANS.md" skills/execplan/SKILL.md` → at least 1 (shared vendor point, no second copy)
 - `grep -c "one at a time" skills/execplan/SKILL.md` → 1 (vendored grill text present verbatim)
-- Behavioral, on first real use: a session pointed at a well-scoped task produces one file under `docs/superpowers/execplans/` containing PLANS.md's living sections (`Progress`, `Surprises & Discoveries`, `Decision Log`, `Outcomes & Retrospective`) and executes it to a reviewed merge without asking "should I proceed?" mid-flight.
+- Behavioral, on first real use: a session pointed at a well-scoped task produces one file under `docs/doperpowers/execplans/` containing PLANS.md's living sections (`Progress`, `Surprises & Discoveries`, `Decision Log`, `Outcomes & Retrospective`) and executes it to a reviewed merge without asking "should I proceed?" mid-flight.
 
 ## Decision Log
 
@@ -59,7 +59,7 @@ The execspec pipeline and its four hooks; the vendored PLANS.md (still one copy,
   Evidence: `~/.claude/skills/grilling/SKILL.md` (10 lines), `grill-with-docs/SKILL.md` ("Run a /grilling session, using the /domain-modeling skill.").
 
 - Observation: ExecPlan's most dangerous clause ("do not prompt the user; resolve ambiguities autonomously") becomes safe when the human gate is front-loaded rather than removed — the grill exhausts the ambiguity space while the human is present.
-  Evidence: The validity gaps identified in the original superpowers-vs-ExecPlan analysis (no elicitation protocol, no term-definition method, undifferentiated decision lifetimes) map one-to-one onto grilling, domain-modeling's glossary moves, and the ADR three-condition test.
+  Evidence: The validity gaps identified in the original doperpowers-vs-ExecPlan analysis (no elicitation protocol, no term-definition method, undifferentiated decision lifetimes) map one-to-one onto grilling, domain-modeling's glossary moves, and the ADR three-condition test.
 
 ## Outcomes & Retrospective
 

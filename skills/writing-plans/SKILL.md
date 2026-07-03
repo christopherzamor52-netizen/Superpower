@@ -13,9 +13,9 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
-**Context:** If working in an isolated worktree, it should have been created via the `superpowers:using-git-worktrees` skill at execution time.
+**Context:** If working in an isolated worktree, it should have been created via the `doperpowers:using-git-worktrees` skill at execution time.
 
-**Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+**Save plans to:** `docs/doperpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
 
 ## Scope Check
@@ -53,7 +53,7 @@ independently testable deliverable.
 
 ## Spike Tasks
 
-If the spec declares a prototyping milestone (superpowers:execspec), plan it as a spike task: the deliverable is knowledge, not shipped code. State the question the spike answers, the exact steps to build and run it, what to observe, and the spec's promote-or-discard criteria verbatim. Spike tasks skip the TDD cycle — their steps are build → run → record. The final step routes the verdict into the spec's `## Surprises & Discoveries` or `## Decision Log` and applies the criteria: promote (follow-up tasks harden it with tests) or discard (delete the prototype code; the knowledge stays in the spec).
+If the spec declares a prototyping milestone (doperpowers:execspec), plan it as a spike task: the deliverable is knowledge, not shipped code. State the question the spike answers, the exact steps to build and run it, what to observe, and the spec's promote-or-discard criteria verbatim. Spike tasks skip the TDD cycle — their steps are build → run → record. The final step routes the verdict into the spec's `## Surprises & Discoveries` or `## Decision Log` and applies the criteria: promote (follow-up tasks harden it with tests) or discard (delete the prototype code; the knowledge stays in the spec).
 
 ## Final Verification Task
 
@@ -66,7 +66,7 @@ End every plan with a verification task that executes the spec's acceptance sect
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use doperpowers:subagent-driven-development (recommended) or doperpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -159,7 +159,7 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
-**4. Spec drift:** Planning is the first hostile read of the spec. If planning revealed a spec statement that is wrong — an argument that is actually an output, an infeasible constraint, a misnamed path — fix the spec now and add a line to its `## Revision Notes` (see superpowers:execspec). Never let the plan silently diverge from the spec.
+**4. Spec drift:** Planning is the first hostile read of the spec. If planning revealed a spec statement that is wrong — an argument that is actually an output, an infeasible constraint, a misnamed path — fix the spec now and add a line to its `## Revision Notes` (see doperpowers:execspec). Never let the plan silently diverge from the spec.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
@@ -167,7 +167,7 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 After saving the plan, offer execution choice:
 
-**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
+**"Plan complete and saved to `docs/doperpowers/plans/<filename>.md`. Two execution options:**
 
 **1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
 
@@ -176,9 +176,9 @@ After saving the plan, offer execution choice:
 **Which approach?"**
 
 **If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
+- **REQUIRED SUB-SKILL:** Use doperpowers:subagent-driven-development
 - Fresh subagent per task + two-stage review
 
 **If Inline Execution chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
+- **REQUIRED SUB-SKILL:** Use doperpowers:executing-plans
 - Batch execution with checkpoints for review

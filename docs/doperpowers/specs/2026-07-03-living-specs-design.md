@@ -1,12 +1,12 @@
 # Living Specs — Design
 
-**Goal:** Import the living-document doctrine of Codex ExecPlans (PLANS.md) into the superpowers **spec layer**, so a spec stays truthful for the whole life of its feature: decisions carry their rationale and their rejected alternatives, execution-time discoveries flow back into the document, and every feature closes with a retrospective — while the plan layer and the execution machinery stay exactly as they are.
+**Goal:** Import the living-document doctrine of Codex ExecPlans (PLANS.md) into the doperpowers **spec layer**, so a spec stays truthful for the whole life of its feature: decisions carry their rationale and their rejected alternatives, execution-time discoveries flow back into the document, and every feature closes with a retrospective — while the plan layer and the execution machinery stay exactly as they are.
 
 **This spec is itself the first living spec.** Its Decision Log, Surprises & Discoveries, and Outcomes & Retrospective sections below are live and must be maintained per the doctrine it defines.
 
 ## Problem
 
-The superpowers pipeline has no structural home for three lifecycle functions, and it shows:
+The doperpowers pipeline has no structural home for three lifecycle functions, and it shows:
 
 1. **Spec drift.** A spec is culturally frozen after approval. Concretely: the issue-tracker spec (§4) lists `board-register.sh <title> <category> <md>` where `<md>` is actually an *output*; the discrepancy was discovered during plan-writing the same day, recorded in the plan — and never flowed back. The spec has been wrong since day one.
 2. **Lost rationale.** Brainstorming *generates* 2-3 competing approaches with trade-offs, but only the winner reaches the spec. The comparison evidence evaporates with the conversation, so rejected ideas get re-proposed.
@@ -63,7 +63,7 @@ The **front of the spec stays untemplated** — across the 15 existing specs no 
 
 Each hook is one small insertion; exact anchor text lives in the implementation plan.
 
-1. **`brainstorming/SKILL.md`** — checklist item 6 and the "After the Design > Documentation" section: write the design doc in living-spec shape (reference `superpowers:execspec`); seed the Decision Log from the approaches step — the 2-3 alternatives with trade-offs are already generated, capturing them is free.
+1. **`brainstorming/SKILL.md`** — checklist item 6 and the "After the Design > Documentation" section: write the design doc in living-spec shape (reference `doperpowers:execspec`); seed the Decision Log from the approaches step — the 2-3 alternatives with trade-offs are already generated, capturing them is free.
 2. **`writing-plans/SKILL.md`** — Self-Review gains check 4, **Spec drift**: planning is the first hostile read of the spec; if a spec statement proved wrong while planning (an argument that is actually an output, an infeasible constraint), fix the spec now and add a Revision Note — never let the plan silently diverge.
 3. **`subagent-driven-development/SKILL.md`** — Durable Progress: in the same bookkeeping message as the ledger append, route anything from the task's report that changes design understanding (assumption proved false, constraint discovered, mid-course decision) into the spec's Surprises & Discoveries or Decision Log.
 4. **`finishing-a-development-branch/SKILL.md`** — after Step 1's tests pass, before presenting options: append the Outcomes & Retrospective entry to the spec and commit it, so the retrospective rides the branch into the merge.
@@ -82,7 +82,7 @@ Structural (run from repo root; all must hold after implementation):
 
 - `ls skills/execspec/` → `SKILL.md  references/`
 - `git log --oneline --follow -- skills/execspec/references/PLANS.md` → exactly two commits, the rename and the original vendor commit; content byte-identical across the move (`git diff 9496bde:skills/living-specs/references/PLANS.md HEAD:skills/execspec/references/PLANS.md` → empty)
-- `grep -l "superpowers:execspec" skills/brainstorming/SKILL.md skills/writing-plans/SKILL.md skills/subagent-driven-development/SKILL.md skills/finishing-a-development-branch/SKILL.md` → prints all four paths
+- `grep -l "doperpowers:execspec" skills/brainstorming/SKILL.md skills/writing-plans/SKILL.md skills/subagent-driven-development/SKILL.md skills/finishing-a-development-branch/SKILL.md` → prints all four paths
 
 Behavioral (observed on the next real feature, this one included):
 
@@ -103,7 +103,7 @@ Behavioral (observed on the next real feature, this one included):
   Rationale: Audience (controllers, humans, future sessions — not cheap transcription implementers), lifetime (specs survive merge as design history; plans are consumables), and culture (upstream already maintains specs as living docs with no written norm).
   Date: 2026-07-03
 
-- Decision: Base document is the superpowers spec; ExecPlan enters as **norms**, never as envelope.
+- Decision: Base document is the doperpowers spec; ExecPlan enters as **norms**, never as envelope.
   Rationale: ExecPlan's autonomy, single-document, and formatting rules conflict head-on with the validity architecture being kept (human gates, layered docs, context economics).
   Date: 2026-07-03
 
@@ -171,7 +171,7 @@ Remains: behavioral acceptance on the next real brainstorm (does a fresh session
 
 ## Revision Notes
 
-- 2026-07-03: Initial version — terminal artifact of the brainstorm (conversation: superpowers-vs-ExecPlan comparative analysis → synthesis design). Vendored `skills/living-specs/references/PLANS.md` committed alongside.
+- 2026-07-03: Initial version — terminal artifact of the brainstorm (conversation: doperpowers-vs-ExecPlan comparative analysis → synthesis design). Vendored `skills/living-specs/references/PLANS.md` committed alongside.
 - 2026-07-03: Verification hardened during plan-writing (the first hostile read, as the doctrine predicts): the vendored-file check `git diff HEAD` was ineffective — it passes even after a modifying commit — replaced with a `git log` single-commit check.
 - 2026-07-03: Outcomes & Retrospective written at finish via the newly installed finishing hook — the feature closing its own loop.
 - 2026-07-03: Decision Log extended — separate-skill-vs-fold-into-brainstorming challenged by the human partner after implementation; rationale for the standing choice was undocumented (exactly the gap this regime exists to close), now recorded.

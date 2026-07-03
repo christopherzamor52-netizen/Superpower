@@ -64,13 +64,13 @@ to see divergence at a glance (`0  0` = perfectly in sync, as it is now).
 
 | Path | What it is |
 |------|-----------|
-| `skills/` | The core product — one dir per skill, each with `SKILL.md` (frontmatter `name` + `description` that drives auto-trigger). 14 skills; `using-superpowers` is the bootstrap entrypoint. |
-| `hooks/` | `hooks.json` wires a `SessionStart` (startup/clear/compact) hook → `run-hook.cmd session-start`, which injects the `using-superpowers` bootstrap. `session-start-codex` is the Codex variant. |
+| `skills/` | The core product — one dir per skill, each with `SKILL.md` (frontmatter `name` + `description` that drives auto-trigger). 14 skills; `using-doperpowers` is the bootstrap entrypoint. |
+| `hooks/` | `hooks.json` wires a `SessionStart` (startup/clear/compact) hook → `run-hook.cmd session-start`, which injects the `using-doperpowers` bootstrap. `session-start-codex` is the Codex variant. |
 | `.claude-plugin/` | Claude Code manifest (`plugin.json`) + dev `marketplace.json`. |
 | `.codex-plugin/`, `.cursor-plugin/`, `.kimi-plugin/`, `.opencode/`, `.pi/`, `.agents/`, `gemini-extension.json` | Per-harness plugin manifests/adapters. `.codex-plugin` is synced out via `scripts/sync-to-codex-plugin.sh`. |
 | `tests/` | Shell + harness integration tests, one subdir per harness (`claude-code/`, `codex/`, `kimi/`, `opencode/`, `pi/`, `hooks/`, `shell-lint/`, …). Run via each dir's `run-*.sh`. |
 | `scripts/` | `bump-version.sh` (version across all manifests per `.version-bump.json`), `lint-shell.sh`, `sync-to-codex-plugin.sh`. |
-| `docs/` | Harness porting/install docs + `docs/superpowers/{plans,specs}` design history. |
+| `docs/` | Harness porting/install docs + `docs/doperpowers/{plans,specs}` design history. |
 | `evals/` | Skill-behavior eval harness (`superpowers-evals`), **gitignored** — cloned in separately, not part of the plugin. |
 | `.github/` | `PULL_REQUEST_TEMPLATE.md` (strict — see upstream `CLAUDE.md`), issue templates. |
 

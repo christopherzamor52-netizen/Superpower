@@ -407,6 +407,50 @@ grep -q '"edge": "relates_to"' "$BOARD/log.jsonl" && pass "relates mutations log
 err="$( { run board-edge.sh T21 --block; } 2>&1 1>/dev/null || true )"
 assert_contains "$err" "--block" "missing operand names the option"
 
+# ---- board-map (interactive HTML) --------------------------------------------
+# Fresh probes with known states so assertions don't depend on the board's
+# accumulated end-state. Highest ticket so far is T29 → T30 next.
+echo "board-map (html):"
+
+run board-register.sh "HTML blocker" enhancement >/dev/null                        # T30
+run board-register.sh "HTML dependent" enhancement --blocked-by T30 >/dev/null      # T31
+run board-register.sh "HTML spawned child" enhancement --spawned-by T31 >/dev/null  # T32
+run board-register.sh "HTML epic" enhancement >/dev/null                            # T33
+run board-register.sh "HTML epic child" enhancement --parent T33 >/dev/null         # T34
+run board-relate.sh T30 T32 >/dev/null
+
+run board-map.sh --write >/dev/null 2>&1
+assert_file_exists "$BOARD/MAP.html" "--write saves MAP.html in the board dir"
+
+# Whitespace-stripped view lets us grep the injected JSON as compact substrings.
+# (Explicit ' \n\t' — BSD tr does not treat [:space:] as a class.)
+html="$(tr -d ' \n\t' < "$BOARD/MAP.html")"
+assert_contains "$html" '"id":"T31","state":"ready-for-agent"' "node T31 present with its state"
+assert_contains "$html" '"from":"T30","to":"T31","kind":"block-active"' "active block edge in payload"
+assert_contains "$html" '"label":"waiting:T30"' "T31 carries the unmet-blocker label"
+assert_contains "$html" '"from":"T31","to":"T32","kind":"spawned"' "spawned lineage edge in payload"
+assert_contains "$html" '"from":"T30","to":"T32","kind":"relates"' "relates edge in payload (single direction)"
+printf '%s' "$html" | grep -Fq '"from":"T32","to":"T30","kind":"relates"' \
+    && fail "relates edge de-duplicated to one direction" || pass "relates edge de-duplicated to one direction"
+assert_contains "$html" '"id":"T33","descendants":["T34"]' "epic T33 lists its descendant"
+assert_contains "$html" '"id":"T31","state":"ready-for-agent","eligible":false' "blocked dependent is not eligible"
+
+# Self-contained: no external references anywhere in the file.
+ext="$(grep -Eic 'src="https?://|href="https?://[^"]*\.css|cdnjs|unpkg|jsdelivr' "$BOARD/MAP.html" || true)"
+assert_equals "$ext" "0" "MAP.html has no external references (self-contained)"
+
+# block-done appears once the blocker lands.
+run board-transition.sh T30 in-progress >/dev/null
+run board-transition.sh T30 "done" >/dev/null
+run board-map.sh --write >/dev/null 2>&1
+html="$(tr -d ' \n\t' < "$BOARD/MAP.html")"
+assert_contains "$html" '"from":"T30","to":"T31","kind":"block-done"' "satisfied block flips to block-done"
+assert_contains "$html" '"id":"T31","state":"ready-for-agent","eligible":true' "dependent becomes eligible once blocker is done"
+
+# The template token was fully substituted.
+printf '%s' "$html" | grep -Fq '__BOARD_PAYLOAD__' \
+    && fail "payload token fully substituted" || pass "payload token fully substituted"
+
 # ---- summary -----------------------------------------------------------------
 echo
 if [[ "$FAILURES" -eq 0 ]]; then echo "ALL TESTS PASSED"; else

@@ -153,5 +153,134 @@ PY
 printf '%s\n' "$out"
 if [ "$write" -eq 1 ]; then
   printf '%s\n' "$out" > "$BOARD_DIR/MAP.md"
-  echo "wrote $BOARD_DIR/MAP.md" >&2
+  # Render the interactive graph. Call python3 directly (not via _py) so the
+  # template/html paths are exported to it unambiguously alongside BOARD_MAP.
+  BOARD_MAP="$MAP" BOARD_TEMPLATE="$SCRIPT_DIR/board-map.template.html" \
+  BOARD_HTML="$BOARD_DIR/MAP.html" python3 - <<'PY'
+import json, os
+
+with open(os.environ["BOARD_MAP"]) as f:
+    board = json.load(f)
+tickets = board["tickets"]
+
+def num(t): return int(t[1:])
+order = sorted(tickets, key=num)
+epics = {n["parent"] for n in tickets.values() if n.get("parent")}
+
+def eligible(tid, n):
+    if tid in epics or n["state"] != "ready-for-agent":
+        return False
+    return all(tickets.get(b, {}).get("state") == "done" for b in n.get("blocked_by", []))
+
+CLASS = {"done": "s_done", "in-progress": "s_prog", "in-review": "s_rev", "blocked": "s_blk",
+         "needs-info": "s_info", "deferred": "s_def", "wontfix": "s_wf"}
+def cls(tid, n):
+    if n["state"] == "ready-for-agent":
+        return "s_elig" if eligible(tid, n) else "s_wait"
+    return CLASS.get(n["state"], "s_wait")
+
+def state_label(tid, n):
+    if n["state"] == "ready-for-agent":
+        unmet = [b for b in n.get("blocked_by", []) if tickets.get(b, {}).get("state") != "done"]
+        return ("waiting: " + ",".join(unmet)) if unmet else "ELIGIBLE"
+    return n["state"]
+
+# Longest-path layering over blocked_by (blockers above dependents); memoized,
+# and cycle-tolerant for a hand-edited map (a back-edge just resolves to 0).
+LAYER = {}
+def layer(tid, seen):
+    if tid in LAYER:
+        return LAYER[tid]
+    if tid in seen:
+        return 0
+    bs = [b for b in tickets[tid].get("blocked_by", []) if b in tickets]
+    lv = 0 if not bs else 1 + max(layer(b, seen | {tid}) for b in bs)
+    LAYER[tid] = lv
+    return lv
+for t in order:
+    layer(t, set())
+
+def root(tid):
+    seen, p = set(), tid
+    while tickets[p].get("parent") in tickets and tickets[p]["parent"] not in seen:
+        seen.add(p); p = tickets[p]["parent"]
+    return p
+
+def descendants(tid):
+    out, seen, stack = [], set(), [c for c in order if tickets[c].get("parent") == tid]
+    while stack:
+        c = stack.pop()
+        if c in seen or c not in tickets:
+            continue
+        seen.add(c); out.append(c)
+        stack.extend(k for k in order if tickets[k].get("parent") == c)
+    return sorted(out, key=num)
+
+# Coordinates: give each top-level cluster (epic tree or lone node) its own
+# disjoint column band, so an epic's bounding box can only ever enclose its own
+# members — a non-member lives in another band, at another x. Layer sets the row.
+COL, ROW = 210, 110
+clusters = {}
+for t in order:
+    clusters.setdefault(root(t), []).append(t)
+col_start, next_col = {}, 0
+for rt in sorted(clusters, key=num):
+    per_layer = {}
+    for t in clusters[rt]:
+        per_layer.setdefault(LAYER[t], []).append(t)
+    col_start[rt] = next_col
+    next_col += max(len(v) for v in per_layer.values())
+pos = {}
+for rt in sorted(clusters, key=num):
+    per_layer = {}
+    for t in clusters[rt]:
+        per_layer.setdefault(LAYER[t], []).append(t)
+    for lv, members in per_layer.items():
+        for i, t in enumerate(sorted(members, key=num)):
+            pos[t] = ((col_start[rt] + i) * COL, lv * ROW)
+
+nodes = []
+for t in order:
+    n = tickets[t]; x, y = pos[t]
+    nodes.append({
+        "id": t, "state": n["state"], "eligible": eligible(t, n),
+        "cls": cls(t, n), "label": state_label(t, n),
+        "title": " ".join(str(n["title"]).split()),
+        "category": n.get("category"), "note": n.get("note"),
+        "blocked_by": n.get("blocked_by", []), "spawned_by": n.get("spawned_by"),
+        "relates_to": n.get("relates_to", []) or [], "branch": n.get("branch"),
+        "pr": n.get("pr"), "md": n.get("md"),
+        "created": n.get("created"), "updated": n.get("updated"),
+        "x": x, "y": y,
+    })
+
+edges = []
+seen_rel = set()
+for t in order:
+    n = tickets[t]
+    for b in n.get("blocked_by", []):
+        if b in tickets:
+            edges.append({"from": b, "to": t,
+                          "kind": "block-done" if tickets[b]["state"] == "done" else "block-active"})
+    sb = n.get("spawned_by")
+    if sb in tickets:
+        edges.append({"from": sb, "to": t, "kind": "spawned"})
+    for r in n.get("relates_to", []) or []:
+        if r in tickets and (r, t) not in seen_rel:
+            seen_rel.add((t, r))
+            edges.append({"from": t, "to": r, "kind": "relates"})
+
+epx = [{"id": e, "descendants": descendants(e)} for e in sorted(epics, key=num) if e in tickets]
+updated = max((n.get("updated") or "" for n in tickets.values()), default="")
+payload = {"meta": {"updated": updated, "count": len(tickets)},
+           "nodes": nodes, "edges": edges, "epics": epx}
+
+# Embed in a <script> block: neutralize <, >, & so a title can't break out.
+data = json.dumps(payload, indent=2).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+with open(os.environ["BOARD_TEMPLATE"]) as f:
+    tpl = f.read()
+with open(os.environ["BOARD_HTML"], "w") as f:
+    f.write(tpl.replace("__BOARD_PAYLOAD__", data))
+PY
+  echo "wrote $BOARD_DIR/MAP.md and $BOARD_DIR/MAP.html" >&2
 fi

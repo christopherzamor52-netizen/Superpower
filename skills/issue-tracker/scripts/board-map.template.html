@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Issue Board Map</title>
+<style>
+  :root { font-family: -apple-system, Segoe UI, Roboto, sans-serif; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; color: #212529; }
+  #controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+              padding: 8px 12px; border-bottom: 1px solid #dee2e6; background: #f8f9fa; font-size: 13px; }
+  #meta { color: #495057; }
+  #chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { border: 1px solid #ced4da; background: #fff; border-radius: 12px;
+          padding: 2px 10px; font-size: 12px; cursor: pointer; color: #495057; }
+  .chip.off { opacity: .4; text-decoration: line-through; }
+  .chip.on  { background: #2b8a3e; color: #fff; border-color: #2b8a3e; }
+  #reset { margin-left: auto; border: 1px solid #ced4da; background: #fff;
+           border-radius: 6px; padding: 3px 10px; cursor: pointer; font-size: 12px; }
+  #stage { position: relative; flex: 1; min-height: 0; }
+  #board { width: 100%; height: 100%; background: #fff; cursor: grab; }
+  #board:active { cursor: grabbing; }
+  .edge { fill: none; stroke: #868e96; stroke-width: 2; }
+  .edge.block-active { stroke: #495057; stroke-width: 2.5; }
+  .edge.block-done   { stroke: #adb5bd; stroke-dasharray: 4 4; }
+  .edge.spawned      { stroke: #adb5bd; stroke-dasharray: 2 4; }
+  .edge.relates      { stroke: #adb5bd; stroke-dasharray: 1 5; }
+  .elabel { fill: #868e96; font-size: 10px; }
+  .node { cursor: pointer; }
+  .node.dim { opacity: .2; }
+  .node .card { stroke-width: 1.5; }
+  .node .nid { font-weight: 700; font-size: 12px; }
+  .node .ntitle { font-size: 11px; }
+  .node .nstate { font-size: 10px; font-style: italic; }
+  .epicbox { fill: rgba(73,80,87,.05); stroke: #adb5bd; stroke-dasharray: 3 4; }
+  .epiclabel { fill: #868e96; font-size: 11px; font-weight: 600; }
+  /* state palette — identical to the Mermaid classDef fills/strokes/text */
+  .node.s_done .card { fill: #d3f9d8; stroke: #2b8a3e; } .node.s_done text { fill: #1b4332; }
+  .node.s_prog .card { fill: #d0ebff; stroke: #1971c2; } .node.s_prog text { fill: #1c3f5e; }
+  .node.s_rev  .card { fill: #e5dbff; stroke: #6741d9; } .node.s_rev  text { fill: #3b2b73; }
+  .node.s_elig .card { fill: #ffffff; stroke: #2b8a3e; stroke-width: 3; } .node.s_elig text { fill: #1b4332; }
+  .node.s_wait .card { fill: #f1f3f5; stroke: #adb5bd; } .node.s_wait text { fill: #495057; }
+  .node.s_blk  .card { fill: #ffe3e3; stroke: #c92a2a; } .node.s_blk  text { fill: #5f1414; }
+  .node.s_info .card { fill: #fff3bf; stroke: #e67700; } .node.s_info text { fill: #5c3c00; }
+  .node.s_def  .card { fill: #f1f3f5; stroke: #adb5bd; stroke-dasharray: 5 5; } .node.s_def text { fill: #868e96; }
+  .node.s_wf   .card { fill: #dee2e6; stroke: #495057; stroke-dasharray: 3 3; } .node.s_wf text { fill: #495057; }
+  #detail { position: absolute; top: 0; right: 0; width: 320px; max-width: 90%; height: 100%;
+            overflow: auto; background: #fff; border-left: 1px solid #dee2e6;
+            padding: 16px; font-size: 13px; box-shadow: -4px 0 12px rgba(0,0,0,.06); }
+  #detail[hidden] { display: none; }
+  #detail h2 { font-size: 15px; margin: 0 30px 12px 0; word-break: break-word; }
+  #dclose { position: absolute; top: 8px; right: 10px; border: 0; background: none;
+            font-size: 22px; line-height: 1; cursor: pointer; color: #868e96; }
+  .drow { display: grid; grid-template-columns: 84px 1fr; gap: 8px; padding: 4px 0; border-top: 1px solid #f1f3f5; }
+  .drow span { color: #868e96; } .drow b { font-weight: 500; word-break: break-word; }
+  #legend { padding: 6px 12px; border-top: 1px solid #dee2e6; background: #f8f9fa;
+            font-size: 11px; color: #495057; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .lg { border-radius: 4px; padding: 1px 7px; border: 1px solid; }
+  .lg.s_done{background:#d3f9d8;border-color:#2b8a3e;color:#1b4332}
+  .lg.s_prog{background:#d0ebff;border-color:#1971c2;color:#1c3f5e}
+  .lg.s_rev{background:#e5dbff;border-color:#6741d9;color:#3b2b73}
+  .lg.s_elig{background:#fff;border-color:#2b8a3e;color:#1b4332}
+  .lg.s_wait{background:#f1f3f5;border-color:#adb5bd;color:#495057}
+  .lg.s_blk{background:#ffe3e3;border-color:#c92a2a;color:#5f1414}
+  .lg.s_info{background:#fff3bf;border-color:#e67700;color:#5c3c00}
+  .lg.s_def{background:#f1f3f5;border-color:#adb5bd;color:#868e96}
+  .lg.s_wf{background:#dee2e6;border-color:#495057;color:#495057}
+  .le { color: #868e96; } .le::before { content: "— "; }
+</style>
+</head>
+<body>
+<header id="controls">
+  <span id="meta"></span>
+  <span id="chips"></span>
+  <button id="reset">reset view</button>
+</header>
+<div id="stage">
+  <svg id="board" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
+              orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#868e96"/></marker>
+    </defs>
+    <g id="viewport"></g>
+  </svg>
+  <aside id="detail" hidden></aside>
+</div>
+<div id="legend"></div>
+<script id="board-data" type="application/json">__BOARD_PAYLOAD__</script>
+<script>
+(function () {
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  var NODE_W = 180, NODE_H = 54;
+  var BOARD = JSON.parse(document.getElementById("board-data").textContent);
+  var SVG = document.getElementById("board");
+  var VP = document.getElementById("viewport");
+  var nodeById = {}, epicById = {};
+  BOARD.nodes.forEach(function (n) { nodeById[n.id] = n; });
+  BOARD.epics.forEach(function (e) { epicById[e.id] = e; });
+
+  var collapsed = {}, hiddenStates = {}, eligibleOnly = false;
+  var tx = 40, ty = 40, k = 1;
+
+  function el(tag, attrs, cls) {
+    var e = document.createElementNS(NS, tag), key;
+    for (key in attrs) if (attrs.hasOwnProperty(key)) e.setAttribute(key, attrs[key]);
+    if (cls) e.setAttribute("class", cls);
+    return e;
+  }
+  function txt(x, y, s, cls) { var t = el("text", { x: x, y: y }, cls); t.textContent = s; return t; }
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+  function clip(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1) + "…" : s; }
+
+  // Resolve an id to the outermost COLLAPSED epic that hides it (or itself).
+  function resolve(id) {
+    var hit = BOARD.epics.filter(function (e) {
+      return collapsed[e.id] && (e.id === id || e.descendants.indexOf(id) >= 0);
+    });
+    if (!hit.length) return id;
+    var outer = hit.filter(function (e) {
+      return !hit.some(function (o) { return o !== e && o.descendants.indexOf(e.id) >= 0; });
+    });
+    return (outer[0] || hit[0]).id;
+  }
+  function hiddenBy(n) { return hiddenStates[n.state] || (eligibleOnly && !n.eligible); }
+  function bbox(ids) {
+    var xs = ids.map(function (i) { return nodeById[i].x; });
+    var ys = ids.map(function (i) { return nodeById[i].y; });
+    var x = Math.min.apply(null, xs), y = Math.min.apply(null, ys);
+    return { x: x, y: y, w: Math.max.apply(null, xs) + NODE_W - x, h: Math.max.apply(null, ys) + NODE_H - y };
+  }
+
+  function edgePath(s, t, kind) {
+    var x1 = s.x + NODE_W / 2, y1 = s.y + NODE_H, x2 = t.x + NODE_W / 2, y2 = t.y;
+    var dy = (y2 - y1) / 2;
+    var d = "M" + x1 + "," + y1 + " C" + x1 + "," + (y1 + dy) + " " + x2 + "," + (y2 - dy) + " " + x2 + "," + y2;
+    var attrs = { d: d };
+    if (kind === "block-active" || kind === "block-done" || kind === "spawned") attrs["marker-end"] = "url(#arrow)";
+    return el("path", attrs, "edge " + kind);
+  }
+  function nodeCard(n) {
+    var isEpic = !!epicById[n.id];
+    var g = el("g", { transform: "translate(" + n.x + "," + n.y + ")", "data-id": n.id },
+      "node " + n.cls + (hiddenBy(n) ? " dim" : ""));
+    g.appendChild(el("rect", { x: 0, y: 0, width: NODE_W, height: NODE_H, rx: 8 }, "card"));
+    g.appendChild(txt(10, 20, n.id + (isEpic ? (collapsed[n.id] ? "  ▸" : "  ▾") : ""), "nid"));
+    g.appendChild(txt(10, 37, clip(n.title, 26), "ntitle"));
+    g.appendChild(txt(10, 50, clip(n.label, 30), "nstate"));
+    g.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      if (isEpic) toggleEpic(n.id);
+      showDetail(n);
+    });
+    return g;
+  }
+
+  function render() {
+    while (VP.firstChild) VP.removeChild(VP.firstChild);
+    var vis = {};
+    BOARD.nodes.forEach(function (n) { if (resolve(n.id) === n.id) vis[n.id] = true; });
+
+    BOARD.epics.forEach(function (e) {
+      if (collapsed[e.id] || resolve(e.id) !== e.id) return;
+      var members = [e.id].concat(e.descendants).filter(function (id) { return vis[id]; });
+      if (members.length < 2) return;
+      var b = bbox(members);
+      VP.appendChild(el("rect", { x: b.x - 14, y: b.y - 26, width: b.w + 28, height: b.h + 40, rx: 10 }, "epicbox"));
+      VP.appendChild(txt(b.x - 8, b.y - 12, e.id + " · epic", "epiclabel"));
+    });
+
+    var seen = {};
+    BOARD.edges.forEach(function (e) {
+      var a = resolve(e.from), b = resolve(e.to);
+      if (a === b || !vis[a] || !vis[b]) return;
+      var key = a + ">" + b + ":" + e.kind;
+      if (seen[key]) return; seen[key] = true;
+      VP.appendChild(edgePath(nodeById[a], nodeById[b], e.kind));
+      if (e.kind === "spawned" || e.kind === "relates") {
+        var s = nodeById[a], t = nodeById[b];
+        VP.appendChild(txt((s.x + t.x) / 2 + NODE_W / 2, (s.y + t.y) / 2 + NODE_H / 2, e.kind, "elabel"));
+      }
+    });
+
+    BOARD.nodes.forEach(function (n) { if (vis[n.id]) VP.appendChild(nodeCard(n)); });
+    applyTransform();
+  }
+
+  function applyTransform() { VP.setAttribute("transform", "translate(" + tx + "," + ty + ") scale(" + k + ")"); }
+  function toggleEpic(id) { if (collapsed[id]) delete collapsed[id]; else collapsed[id] = true; render(); }
+
+  function showDetail(n) {
+    var d = document.getElementById("detail");
+    function row(kk, vv) {
+      return vv ? '<div class="drow"><span>' + kk + "</span><b>" + esc(vv) + "</b></div>" : "";
+    }
+    var pr = n.pr ? '<div class="drow"><span>PR</span><b><a href="' + esc(n.pr) +
+      '" target="_blank" rel="noopener">' + esc(n.pr) + "</a></b></div>" : "";
+    d.innerHTML = '<button id="dclose">×</button><h2>' + esc(n.id) + " · " + esc(n.title) + "</h2>" +
+      row("state", n.label) + row("category", n.category) + row("note", n.note) +
+      row("blocked by", (n.blocked_by || []).join(", ")) + row("spawned by", n.spawned_by) +
+      row("relates", (n.relates_to || []).join(", ")) + row("branch", n.branch) + pr +
+      row("md", n.md) + row("created", n.created) + row("updated", n.updated);
+    d.hidden = false;
+    document.getElementById("dclose").onclick = function () { d.hidden = true; };
+  }
+
+  function buildChips() {
+    var states = [], seen = {}, c = document.getElementById("chips");
+    BOARD.nodes.forEach(function (n) { if (!seen[n.state]) { seen[n.state] = true; states.push(n.state); } });
+    states.forEach(function (s) {
+      var b = document.createElement("button");
+      b.className = "chip"; b.textContent = s; b.setAttribute("data-state", s);
+      b.onclick = function () {
+        if (hiddenStates[s]) { delete hiddenStates[s]; b.classList.remove("off"); }
+        else { hiddenStates[s] = true; b.classList.add("off"); }
+        render();
+      };
+      c.appendChild(b);
+    });
+    var eb = document.createElement("button");
+    eb.className = "chip"; eb.textContent = "ELIGIBLE only";
+    eb.onclick = function () { eligibleOnly = !eligibleOnly; eb.classList.toggle("on", eligibleOnly); render(); };
+    c.appendChild(eb);
+  }
+  function buildLegend() {
+    var L = [["done", "s_done"], ["in-progress", "s_prog"], ["in-review", "s_rev"], ["ELIGIBLE", "s_elig"],
+      ["waiting", "s_wait"], ["blocked", "s_blk"], ["needs-info", "s_info"], ["deferred", "s_def"], ["wontfix", "s_wf"]];
+    document.getElementById("legend").innerHTML = "<b>state</b> " +
+      L.map(function (p) { return '<span class="lg ' + p[1] + '">' + p[0] + "</span>"; }).join(" ") +
+      ' &nbsp; <b>edges</b> <span class="le">solid=active block</span> <span class="le">dotted=satisfied/spawned/relates</span>';
+  }
+
+  SVG.addEventListener("wheel", function (e) {
+    e.preventDefault();
+    var r = SVG.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+    var nk = Math.min(3, Math.max(0.2, k * Math.exp(-e.deltaY * 0.0015)));
+    tx = mx - (mx - tx) * (nk / k); ty = my - (my - ty) * (nk / k); k = nk; applyTransform();
+  }, { passive: false });
+  var drag = null;
+  SVG.addEventListener("mousedown", function (e) {
+    if (e.target.closest(".node")) return;
+    drag = { x: e.clientX, y: e.clientY, tx: tx, ty: ty };
+  });
+  window.addEventListener("mousemove", function (e) {
+    if (!drag) return; tx = drag.tx + (e.clientX - drag.x); ty = drag.ty + (e.clientY - drag.y); applyTransform();
+  });
+  window.addEventListener("mouseup", function () { drag = null; });
+  SVG.addEventListener("click", function (e) {
+    if (!e.target.closest(".node")) document.getElementById("detail").hidden = true;
+  });
+  document.getElementById("reset").onclick = function () { tx = 40; ty = 40; k = 1; applyTransform(); };
+
+  document.getElementById("meta").textContent = BOARD.meta.count + " tickets · updated " + BOARD.meta.updated;
+  buildChips(); buildLegend(); render();
+})();
+</script>
+</body>
+</html>

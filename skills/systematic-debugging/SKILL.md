@@ -43,9 +43,35 @@ Use for ANY technical issue:
 - You're in a hurry (rushing guarantees rework)
 - Manager wants it fixed NOW (systematic is faster than thrashing)
 
-## The Four Phases
+## The Five Phases
 
 You MUST complete each phase before proceeding to the next.
+
+### Phase 0: Align on Verification Criteria
+
+**BEFORE writing any test code or investigating, align with your human partner on what you're verifying.**
+
+Skipping this leads to wasted effort: you write tests that verify the wrong thing, or investigate without knowing when to stop.
+
+1. **Define the Target Dimension**
+   - What specific input/record/scenario demonstrates the bug?
+   - Pin it down to a concrete example (e.g., "user ID 1234, checkout flow")
+
+2. **Establish the Expected Baseline**
+   - What does the correct value look like? Where does ground truth come from?
+   - e.g., "database direct query returns 42 orders for this user"
+   - If you can't state the expected value, you can't verify the fix
+
+3. **Define What "Success" Means**
+   - Is it an exact match? Within a tolerance? A directional improvement?
+   - e.g., "API response count >= DB count * 0.9 (tolerance for cache lag)"
+
+4. **Get Explicit Sign-Off**
+   - Present these three items to your human partner
+   - Do NOT proceed to Phase 1 until they confirm the criteria
+   - This prevents investigating the wrong problem or verifying the wrong outcome
+
+**When your partner says "grill first" or "let's align on the approach first"** — they're asking for Phase 0.
 
 ### Phase 1: Root Cause Investigation
 
@@ -226,8 +252,9 @@ If you catch yourself thinking:
 - Proposing solutions before tracing data flow
 - **"One more fix attempt" (when already tried 2+)**
 - **Each fix reveals new problem in different place**
+- **Writing test code before aligning on what "pass" means**
 
-**ALL of these mean: STOP. Return to Phase 1.**
+**ALL of these mean: STOP. Return to Phase 0 or Phase 1.**
 
 **If 3+ fixes failed:** Question the architecture (see Phase 4.5)
 
@@ -239,8 +266,9 @@ If you catch yourself thinking:
 - "Stop guessing" - You're proposing fixes without understanding
 - "Ultra-think this" - Question fundamentals, not just symptoms
 - "We're stuck?" (frustrated) - Your approach isn't working
+- **"Grill first" / "Let's align first"** - You skipped Phase 0, go back
 
-**When you see these:** STOP. Return to Phase 1.
+**When you see these:** STOP. Return to Phase 0 or Phase 1.
 
 ## Common Rationalizations
 
@@ -254,11 +282,13 @@ If you catch yourself thinking:
 | "Reference too long, I'll adapt the pattern" | Partial understanding guarantees bugs. Read it completely. |
 | "I see the problem, let me fix it" | Seeing symptoms ≠ understanding root cause. |
 | "One more fix attempt" (after 2+ failures) | 3+ failures = architectural problem. Question pattern, don't fix again. |
+| "I know what to verify, no need to align" | Unaligned criteria → verifying the wrong thing → wasted investigation. |
 
 ## Quick Reference
 
 | Phase | Key Activities | Success Criteria |
 |-------|---------------|------------------|
+| **0. Alignment** | Define target, baseline, success criteria | Partner sign-off on what "fixed" means |
 | **1. Root Cause** | Read errors, reproduce, check changes, gather evidence | Understand WHAT and WHY |
 | **2. Pattern** | Find working examples, compare | Identify differences |
 | **3. Hypothesis** | Form theory, test minimally | Confirmed or new hypothesis |
@@ -294,3 +324,4 @@ From debugging sessions:
 - Random fixes approach: 2-3 hours of thrashing
 - First-time fix rate: 95% vs 40%
 - New bugs introduced: Near zero vs common
+- With Phase 0 alignment: Near-zero wasted investigation rounds

@@ -15,6 +15,8 @@ IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
 This is not negotiable. You cannot rationalize your way out of this.
 </EXTREMELY-IMPORTANT>
 
+
+
 ## The Rule
 
 **Invoke relevant or requested skills BEFORE any response or action** — including clarifying questions, exploring the codebase, or checking files. If it turns out wrong for the situation, you don't have to use it.
@@ -56,6 +58,7 @@ If your harness appears here, read its reference file for special instructions:
 - Codex: `references/codex-tools.md`
 - Pi: `references/pi-tools.md`
 - Antigravity: `references/antigravity-tools.md`
+- Hermes Agent: [references/hermes-tools.md](references/hermes-tools.md)
 
 ## User Instructions
 

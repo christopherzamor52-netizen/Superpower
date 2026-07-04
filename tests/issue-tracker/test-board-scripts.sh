@@ -300,27 +300,36 @@ assert_contains "$out" "line one line two" "multi-line note flattened, not trunc
 
 assert_fails run board-register.sh "$(printf ' \n\t ')" bug     # whitespace-only title
 
-# ---- board-map (mermaid human telemetry) --------------------------------------
+# ---- board-map (minimal MD fallback + HTML graph) -----------------------------
 echo "board-map:"
 
 run board-register.sh "Map edge probe" enhancement --blocked-by T14 >/dev/null      # T15
 run board-register.sh "Map lineage probe" enhancement --spawned-by T15 >/dev/null   # T16
 run board-register.sh "Map epic child probe" enhancement --parent T16 >/dev/null    # T17
-out="$(run board-map.sh)"
-assert_contains "$out" '```mermaid' "map emits a mermaid block"
-assert_contains "$out" "flowchart TD" "map is a flowchart"
-assert_contains "$out" "T14 ==> T15" "active block renders as a thick arrow"
-assert_contains "$out" "waiting: T14" "blocked-on label names the unmet blocker"
-assert_contains "$out" "T15 -. spawned .-> T16" "lineage renders as a labeled dotted arrow"
-assert_contains "$out" 'subgraph T16[' "a parent renders as an epic subgraph"
-assert_contains "$out" "class T14 s_blk" "state maps to its color class"
-run board-map.sh --write >/dev/null 2>&1
-assert_file_exists "$BOARD/MAP.md" "--write saves MAP.md in the board dir"
 
-# Every board WRITE auto-refreshes MAP.md — the render cache cannot go stale
-# by discipline alone.
+# Default stdout is now the graphless fallback table, not a mermaid block.
+out="$(run board-map.sh)"
+assert_contains "$out" "| ticket | state | title | PR |" "map stdout is the fallback table"
+printf '%s' "$out" | grep -Fq '```mermaid' && fail "no mermaid in the fallback" || pass "no mermaid in the fallback"
+echo "$out" | grep "T14" | grep -q "blocked" && pass "T14 row shows its state" || fail "T14 row shows its state"
+
+run board-map.sh --write >/dev/null 2>&1
+assert_file_exists "$BOARD/MAP.md" "--write saves MAP.md (fallback table)"
+assert_file_exists "$BOARD/MAP.html" "--write saves MAP.html (graph)"
+assert_contains "$(cat "$BOARD/MAP.md")" "| T15 |" "MAP.md table has a row per ticket"
+
+# The graph facts that used to be asserted on the mermaid MAP.md now live in MAP.html.
+html="$(tr -d ' \n\t' < "$BOARD/MAP.html")"
+assert_contains "$html" '"from":"T14","to":"T15","kind":"block-active"' "active block edge in MAP.html"
+assert_contains "$html" '"from":"T15","to":"T16","kind":"spawned"' "lineage edge in MAP.html"
+assert_contains "$html" '"id":"T16","descendants":["T17"]' "epic + child in MAP.html"
+assert_contains "$html" '"id":"T14","state":"blocked"' "state travels into MAP.html"
+
+# Every board WRITE auto-refreshes BOTH render caches — they cannot go stale.
 run board-transition.sh T17 in-progress >/dev/null
-assert_contains "$(cat "$BOARD/MAP.md")" "class T17 s_prog" "a board write auto-refreshes MAP.md"
+assert_contains "$(tr -d ' \n\t' < "$BOARD/MAP.html")" '"id":"T17","state":"in-progress"' \
+    "a board write auto-refreshes MAP.html"
+assert_contains "$(cat "$BOARD/MAP.md")" "in-progress" "a board write auto-refreshes MAP.md"
 
 # ---- board-relate (symmetric relates annotation) -------------------------------
 echo "board-relate:"
@@ -335,9 +344,12 @@ assert_fails run board-relate.sh T18 T19            # duplicate
 assert_fails run board-relate.sh T19 T18            # duplicate, reversed
 assert_fails run board-relate.sh T18 T18            # self
 assert_fails run board-relate.sh T18 T99            # unknown ref
-cnt="$(run board-map.sh | grep -Fc -- "-. relates .-")"
-assert_equals "$cnt" "1" "symmetric edge renders exactly once in the map"
-assert_contains "$(cat "$BOARD/MAP.md")" "T18 -. relates .- T19" "relate auto-refreshed MAP.md"
+run board-map.sh --write >/dev/null 2>&1
+rel="$(tr -d ' \n\t' < "$BOARD/MAP.html")"
+assert_contains "$rel" '"from":"T18","to":"T19","kind":"relates"' "relate auto-refreshed MAP.html"
+printf '%s' "$rel" | grep -Fq '"from":"T19","to":"T18","kind":"relates"' \
+    && fail "symmetric relate renders exactly once (no reverse dup)" \
+    || pass "symmetric relate renders exactly once (no reverse dup)"
 out="$(run board-relate.sh T19 T18 --cut)"          # cut works from either side
 assert_contains "$out" "cut: T19 -- T18" "cut reported"
 got="$(python3 -c "import json;t=json.load(open('$BOARD/map.json'))['tickets'];print(t['T18']['relates_to'],t['T19']['relates_to'])")"
@@ -353,7 +365,8 @@ out="$(run board-edge.sh T21 --block T20)"
 assert_contains "$out" "T21: blocked_by += T20" "block adds the edge"
 run board-list.sh | grep "T21" | grep -q "waiting:T20" \
     && pass "T21 now waiting on T20" || fail "T21 now waiting on T20"
-assert_contains "$(cat "$BOARD/MAP.md")" "T20 ==> T21" "block auto-refreshed MAP.md (active-block arrow)"
+assert_contains "$(tr -d ' \n\t' < "$BOARD/MAP.html")" '"from":"T20","to":"T21","kind":"block-active"' \
+    "block auto-refreshed MAP.html (active-block edge)"
 
 assert_fails run board-edge.sh T21 --block T20        # duplicate
 assert_fails run board-edge.sh T21 --block T21        # self

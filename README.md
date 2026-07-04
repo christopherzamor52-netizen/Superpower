@@ -11,7 +11,7 @@ If this sounds like someone you know, definitely send them our way.
 
 ## Quickstart
 
-Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
+Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [GitHub Copilot CLI](#github-copilot-cli), [Grok Build CLI](#grok-build-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
 
 ## How it works
 
@@ -134,6 +134,20 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 
   ```bash
   copilot plugin install superpowers@superpowers-marketplace
+  ```
+
+### Grok Build CLI
+
+- Register the marketplace:
+
+  ```bash
+  grok plugin marketplace add obra/superpowers-marketplace
+  ```
+
+- Install the plugin:
+
+  ```bash
+  grok plugin install superpowers@obra/superpowers-marketplace --trust
   ```
 
 ### Kimi Code

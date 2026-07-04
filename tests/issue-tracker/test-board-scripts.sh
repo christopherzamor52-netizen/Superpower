@@ -464,6 +464,49 @@ assert_contains "$html" '"id":"T31","state":"ready-for-agent","eligible":true' "
 printf '%s' "$html" | grep -Fq '__BOARD_PAYLOAD__' \
     && fail "payload token fully substituted" || pass "payload token fully substituted"
 
+# ---- board-map (crossing minimization) ---------------------------------------
+# One epic with two blockers (T36,T37) over two dependents (T38,T39), wired so
+# the block edges CROSS in numeric-id order: T38←T37 and T39←T36. Barycenter
+# reordering — constrained to this cluster's own band — must lay the layers out
+# with zero crossings. Highest ticket so far is T34 → T35 next.
+echo "board-map (crossing minimization):"
+
+run board-register.sh "Cross epic" enhancement >/dev/null                          # T35 epic
+run board-register.sh "Cross blocker 1" enhancement --parent T35 >/dev/null         # T36
+run board-register.sh "Cross blocker 2" enhancement --parent T35 >/dev/null         # T37
+run board-register.sh "Cross dependent 1" enhancement --parent T35 --blocked-by T37 >/dev/null  # T38←T37
+run board-register.sh "Cross dependent 2" enhancement --parent T35 --blocked-by T36 >/dev/null  # T39←T36
+run board-map.sh --write >/dev/null 2>&1
+
+# Count crossings among this cluster's rendered edges using the emitted coords.
+# The id-stable baseline crosses these two block edges once; a passing layout
+# reorders within the band to reach zero. (Same proper-segment-intersection
+# metric the layout optimizes, read back from BOARD.html.)
+xr="$(python3 - "$BOARD/BOARD.html" <<'PY'
+import sys, json, re
+html = open(sys.argv[1]).read()
+m = re.search(r'id="board-data"[^>]*>(.*?)</script>', html, re.S)
+raw = m.group(1).replace('\\u003c', '<').replace('\\u003e', '>').replace('\\u0026', '&')
+p = json.loads(raw)
+xy = {n['id']: (n['x'], n['y']) for n in p['nodes']}
+C = {'T35', 'T36', 'T37', 'T38', 'T39'}
+segs = [(e['from'], e['to']) for e in p['edges'] if e['from'] in C and e['to'] in C]
+def ccw(a, b, c): return (c[1] - a[1]) * (b[0] - a[0]) - (b[1] - a[1]) * (c[0] - a[0])
+def cross(p1, p2, p3, p4):
+    return ((ccw(p3, p4, p1) > 0) != (ccw(p3, p4, p2) > 0)) and \
+           ((ccw(p1, p2, p3) > 0) != (ccw(p1, p2, p4) > 0))
+n = 0
+for i in range(len(segs)):
+    a, b = segs[i]
+    for j in range(i + 1, len(segs)):
+        d, e = segs[j]
+        if len({a, b, d, e}) == 4 and cross(xy[a], xy[b], xy[d], xy[e]):
+            n += 1
+print("crossings=%d" % n)
+PY
+)"
+assert_equals "$xr" "crossings=0" "crossing-minimization lays the crossed block edges out with zero crossings"
+
 # ---- summary -----------------------------------------------------------------
 echo
 if [[ "$FAILURES" -eq 0 ]]; then echo "ALL TESTS PASSED"; else

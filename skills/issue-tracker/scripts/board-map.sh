@@ -111,9 +111,92 @@ def descendants(tid):
         stack.extend(k for k in order if tickets[k].get("parent") == c)
     return sorted(out, key=num)
 
+# Rendered edges that can visually cross: blocked_by (block), spawned_by
+# (spawned), relates_to (relates). Parent edges draw as epic BOXES, not lines,
+# so they never cross — the neighbor set below deliberately excludes them.
+nbr = {t: set() for t in order}
+for t in order:
+    n = tickets[t]
+    for b in n.get("blocked_by", []):
+        if b in tickets:
+            nbr[t].add(b); nbr[b].add(t)
+    sb = n.get("spawned_by")
+    if sb in tickets:
+        nbr[t].add(sb); nbr[sb].add(t)
+    for r in n.get("relates_to", []) or []:
+        if r in tickets:
+            nbr[t].add(r); nbr[r].add(t)
+
+# Within-layer ordering: crossing minimization by barycenter, constrained to a
+# cluster's own band (a node never leaves its swimlane, so an epic's bounding
+# box stays honest). Fully deterministic (no Date/random) and never worse than
+# the id-stable baseline: the numeric-id order is always a candidate and we keep
+# whichever order has the fewest actual crossings — a graph the heuristic can't
+# improve renders byte-identical to before.
+def _ccw(a, b, c):
+    return (c[1] - a[1]) * (b[0] - a[0]) - (b[1] - a[1]) * (c[0] - a[0])
+def _seg_cross(p1, p2, p3, p4):  # proper intersection; shared endpoints don't count
+    return ((_ccw(p3, p4, p1) > 0) != (_ccw(p3, p4, p2) > 0) and
+            (_ccw(p1, p2, p3) > 0) != (_ccw(p1, p2, p4) > 0))
+def _bary(t, ix, cset):
+    ns = [ix[u] for u in nbr[t] if u in cset]
+    return sum(ns) / len(ns) if ns else ix[t]
+
+def order_cluster(members):
+    cset = set(members)
+    per_layer = {}
+    for t in members:
+        per_layer.setdefault(LAYER[t], []).append(t)
+    for lv in per_layer:
+        per_layer[lv].sort(key=num)
+    # this cluster's rendered edges, once each (as BOARD.html draws them),
+    # as (u, v) segments — direction is irrelevant to a crossing count.
+    ce, seen_rel = [], set()
+    for t in sorted(cset, key=num):
+        n = tickets[t]
+        for b in n.get("blocked_by", []):
+            if b in cset: ce.append((b, t))
+        sb = n.get("spawned_by")
+        if sb in cset: ce.append((sb, t))
+        for r in n.get("relates_to", []) or []:
+            if r in cset and (r, t) not in seen_rel:
+                seen_rel.add((t, r)); ce.append((t, r))
+    def slots(o):
+        m = {}
+        for lst in o.values():
+            for i, t in enumerate(lst): m[t] = i
+        return m
+    def crossings(o):
+        xy = {t: (i, LAYER[t]) for t, i in slots(o).items()}
+        c = 0
+        for i in range(len(ce)):
+            a, b = ce[i]
+            for j in range(i + 1, len(ce)):
+                d, e = ce[j]
+                if len({a, b, d, e}) == 4 and _seg_cross(xy[a], xy[b], xy[d], xy[e]):
+                    c += 1
+        return c
+    best = {lv: list(v) for lv, v in per_layer.items()}
+    best_x = crossings(best)
+    cur = {lv: list(v) for lv, v in per_layer.items()}
+    for it in range(6):
+        seq = sorted(per_layer, reverse=bool(it % 2))
+        ix = slots(cur)
+        for lv in seq:
+            cur[lv] = sorted(cur[lv], key=lambda t, ix=ix: (_bary(t, ix, cset), num(t)))
+            ix = slots(cur)
+        x = crossings(cur)
+        if x < best_x:
+            best_x, best = x, {lv: list(v) for lv, v in cur.items()}
+        if best_x == 0:
+            break
+    return best
+
 # Coordinates: give each top-level cluster (epic tree or lone node) its own
 # disjoint column band, so an epic's bounding box can only ever enclose its own
-# members — a non-member lives in another band, at another x. Layer sets the row.
+# members. Band width is the max nodes-per-layer (order-independent), so the
+# bands are identical to id-order — only the slot a node takes within its band
+# changes. Layer sets the row; crossing-minimized order sets the slot.
 COL, ROW = 210, 110
 clusters = {}
 for t in order:
@@ -127,11 +210,8 @@ for rt in sorted(clusters, key=num):
     next_col += max(len(v) for v in per_layer.values())
 pos = {}
 for rt in sorted(clusters, key=num):
-    per_layer = {}
-    for t in clusters[rt]:
-        per_layer.setdefault(LAYER[t], []).append(t)
-    for lv, members in per_layer.items():
-        for i, t in enumerate(sorted(members, key=num)):
+    for lv, lst in order_cluster(clusters[rt]).items():
+        for i, t in enumerate(lst):
             pos[t] = ((col_start[rt] + i) * COL, lv * ROW)
 
 nodes = []

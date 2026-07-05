@@ -1,5 +1,14 @@
 # Doperpowers Release Notes
 
+## v6.3.1 (2026-07-06)
+
+### Issue Tracker — `BOARD.html` hides done tickets by default
+
+The interactive board now **hides `done` tickets by default** so the view shows active work, not a growing pile of finished tickets. The `done` state chip renders struck-through (off); click it to reveal the done tickets, click again to hide them — the same toggle every state chip already had.
+
+- Two behavior refinements in the render template: a state toggled off is now **removed from the view** (previously it was only dimmed to 20% opacity, still taking layout space), and the auto-fit framing ignores hidden nodes so the board frames the visible work. `done` starts in the hidden set.
+- Data is untouched — `board.json`, ticket markdown, and `BOARD.md` all still contain every ticket. This is a view default only; nothing is deleted or archived. Regenerate `BOARD.html` with `board-map.sh --write` (or any board write) to pick up the new default.
+
 ## v6.3.0 (2026-07-06)
 
 ### Issue Tracker — Board Data File Renamed `map.json` → `board.json`

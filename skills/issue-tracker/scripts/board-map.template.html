@@ -29,7 +29,6 @@
   .edge.relates      { stroke: #adb5bd; stroke-dasharray: 1 5; }
   .elabel { fill: #868e96; font-size: 10px; }
   .node { cursor: pointer; }
-  .node.dim { opacity: .2; }
   .node .card { stroke-width: 1.5; }
   .node .nid { font-weight: 700; font-size: 12px; }
   .node .ntitle { font-size: 11px; }
@@ -100,7 +99,9 @@
   BOARD.nodes.forEach(function (n) { nodeById[n.id] = n; });
   BOARD.epics.forEach(function (e) { epicById[e.id] = e; });
 
-  var collapsed = {}, hiddenStates = {}, eligibleOnly = false;
+  // `done` tickets are hidden by default (finished work is clutter); click the
+  // struck-through "done" chip to reveal them. Any state chip toggles the same way.
+  var collapsed = {}, hiddenStates = { done: true }, eligibleOnly = false;
   var tx = 40, ty = 40, k = 1;
 
   function el(tag, attrs, cls) {
@@ -147,7 +148,7 @@
   function nodeCard(n) {
     var isEpic = !!epicById[n.id];
     var g = el("g", { transform: "translate(" + n.x + "," + n.y + ")", "data-id": n.id },
-      "node " + n.cls + (hiddenBy(n) ? " dim" : ""));
+      "node " + n.cls);
     g.appendChild(el("rect", { x: 0, y: 0, width: NODE_W, height: NODE_H, rx: 8 }, "card"));
     g.appendChild(txt(10, 20, n.id + (isEpic ? (collapsed[n.id] ? "  ▸" : "  ▾") : ""), "nid"));
     g.appendChild(txt(10, 37, clip(n.title, 26), "ntitle"));
@@ -163,7 +164,7 @@
   function render() {
     while (VP.firstChild) VP.removeChild(VP.firstChild);
     var vis = {};
-    BOARD.nodes.forEach(function (n) { if (resolve(n.id) === n.id) vis[n.id] = true; });
+    BOARD.nodes.forEach(function (n) { if (resolve(n.id) === n.id && !hiddenBy(n)) vis[n.id] = true; });
 
     BOARD.epics.forEach(function (e) {
       if (collapsed[e.id] || resolve(e.id) !== e.id) return;
@@ -196,7 +197,7 @@
 
   function contentBounds() {
     var xs = [], ys = [];
-    BOARD.nodes.forEach(function (n) { xs.push(n.x); ys.push(n.y); });
+    BOARD.nodes.forEach(function (n) { if (!hiddenBy(n)) { xs.push(n.x); ys.push(n.y); } });
     if (!xs.length) return { x: 0, y: 0, w: NODE_W, h: NODE_H };
     var x0 = Math.min.apply(null, xs), y0 = Math.min.apply(null, ys);
     return { x: x0, y: y0, w: Math.max.apply(null, xs) + NODE_W - x0, h: Math.max.apply(null, ys) + NODE_H - y0 };
@@ -235,7 +236,7 @@
     BOARD.nodes.forEach(function (n) { if (!seen[n.state]) { seen[n.state] = true; states.push(n.state); } });
     states.forEach(function (s) {
       var b = document.createElement("button");
-      b.className = "chip"; b.textContent = s; b.setAttribute("data-state", s);
+      b.className = "chip" + (hiddenStates[s] ? " off" : ""); b.textContent = s; b.setAttribute("data-state", s);
       b.onclick = function () {
         if (hiddenStates[s]) { delete hiddenStates[s]; b.classList.remove("off"); }
         else { hiddenStates[s] = true; b.classList.add("off"); }

@@ -1,3 +1,15 @@
+## Tool Mapping
+
+Codex tool availability varies by surface. Some tools are available at session
+start; others are deferred and must be discovered before use.
+
+- Treat older `TodoWrite` references as the task-list action. In Codex, use
+  `update_plan` when it is available.
+- For multi-agent work, use `tool_search` to discover and expose the current
+  multi-agent tools before naming specific dispatch commands.
+- Only call `spawn_agent`, `wait_agent`, `close_agent`, or similarly named
+  multi-agent tools after they are actually present in the active tool list.
+
 ## Subagent dispatch requires multi-agent support
 
 Add to your Codex config (`~/.codex/config.toml`):

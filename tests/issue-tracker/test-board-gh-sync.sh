@@ -81,6 +81,20 @@ assert_equals "$gh" "None" "gh 0 clears the link"
 assert_fails run board-meta.sh T999 --gh 1                            # unknown ticket
 assert_fails run board-meta.sh "$tid" --gh notanumber                # non-integer
 
+# ---- Task 3: board-link.sh — gh sugar + one-time title backfill -------------
+echo "board-link (backfill):"
+run board-register.sh "Legacy epic (GH#35)" enhancement >/dev/null
+run board-register.sh "No marker here" bug >/dev/null
+out="$(run board-link.sh --backfill)"
+assert_contains "$out" "gh = 35 (from title)" "backfill parses GH#NN from title"
+n="$(python3 -c "import json;t=json.load(open('$BOARD/map.json'))['tickets'];print(sum(1 for x in t.values() if x.get('gh')==35))")"
+assert_equals "$n" "1" "exactly one ticket linked to #35"
+# a ticket without a marker stays unlinked
+un="$(python3 -c "import json;t=json.load(open('$BOARD/map.json'))['tickets'];print([x['gh'] for x in t.values() if x['title']=='No marker here'][0])")"
+assert_equals "$un" "None" "markerless ticket stays unlinked"
+# re-running backfill does not overwrite an existing link
+run board-link.sh --backfill >/dev/null
+
 # ---- summary -----------------------------------------------------------------
 echo
 if [[ "$FAILURES" -eq 0 ]]; then echo "ALL TESTS PASSED"; else

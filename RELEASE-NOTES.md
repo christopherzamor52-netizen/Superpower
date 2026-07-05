@@ -1,5 +1,16 @@
 # Doperpowers Release Notes
 
+## v6.3.2 (2026-07-06)
+
+### Issue Tracker — `BOARD.html` fills the frame (grid layout)
+
+The interactive board laid every top-level cluster (an epic tree or a lone ticket) in a single horizontal row. On a board of mostly independent tickets that produced a long, ~1-row-tall ribbon: the auto-fit shrank it to a thin sliver across the vertical middle, with large empty margins above and below, and the node text became unreadable.
+
+`board-map.sh` now **shelf-packs the clusters into multiple rows** — it wraps the row of clusters into an N-wide grid whose aspect ratio matches a typical (landscape) viewport, so the board fills the frame instead of a sliver. On a 46-ticket board the readable zoom roughly triples.
+
+- Each cluster is still placed as one contiguous block, so the disjoint-column guarantee that keeps an epic's bounding box honest now also holds across rows (different shelves occupy different row bands). Epic boxes still enclose only their own members, and the crossing-minimized left-to-right cluster order is preserved — the grid just wraps it.
+- Fully deterministic and data-untouched: it's a rendering change only. Regenerate `BOARD.html` with `board-map.sh --write` (or any board write) to pick it up.
+
 ## v6.3.1 (2026-07-06)
 
 ### Issue Tracker — `BOARD.html` hides done tickets by default

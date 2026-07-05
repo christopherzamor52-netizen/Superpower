@@ -298,11 +298,44 @@ if any(cl_nbr.values()):
         if not moved:
             break
 
-col_start = _starts(best_seq)
+# Shelf-pack the top-level bands into rows instead of one long ribbon, so the
+# board fills vertical space. Laid out in a single row, a board of N mostly
+# independent tickets is an N-wide, ~1-tall strip that auto-fits to a thin
+# sliver (huge empty margins above and below); wrapping it into an ~M-wide grid
+# fills the frame and multiplies the readable zoom. Each cluster stays a
+# contiguous block placed at one shelf origin, so the disjoint-column guarantee
+# now also holds across rows (different shelves occupy different row bands) —
+# an epic's bounding box still encloses only its own members. best_seq's
+# crossing-minimized order is preserved; we only wrap it. Shelf width = the one
+# whose packed bounding box best matches a landscape aspect (fitView in the
+# template does the final viewport scaling).
+cheight = {rt: 1 + max(LAYER[t] for t in clusters[rt]) for rt in clusters}
+TARGET_ASPECT = 2.4      # packed width:height — landscape, near a typical viewport
+
+def _pack(shelf_cols):
+    place, cx, top, sh, maxx = {}, 0, 0, 0, 0
+    for rt in best_seq:
+        w = width[rt]
+        if cx and cx + w > shelf_cols:          # this cluster overflows the shelf → wrap
+            top += sh; cx = sh = 0
+        place[rt] = (cx, top)
+        maxx = max(maxx, cx + w); cx += w; sh = max(sh, cheight[rt])
+    return place, maxx, top + sh
+
+_widest, _total = max(width.values()), sum(width.values())
+_best = None
+for _sc in range(_widest, _total + 1):           # widest single cluster … full single row
+    _place, _cols, _rows = _pack(_sc)
+    _score = abs((_cols * COL) / (_rows * ROW) - TARGET_ASPECT)
+    if _best is None or _score < _best[0]:
+        _best = (_score, _place)
+shelf = _best[1]
+
 pos = {}
 for rt in best_seq:
+    bx, by = shelf[rt]
     for t in clusters[rt]:
-        pos[t] = ((col_start[rt] + local[rt][t]) * COL, LAYER[t] * ROW)
+        pos[t] = ((bx + local[rt][t]) * COL, (by + LAYER[t]) * ROW)
 
 nodes = []
 for t in order:

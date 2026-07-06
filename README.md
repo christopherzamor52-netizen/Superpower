@@ -195,7 +195,7 @@ The Pi package loads the Superpowers skills and a small extension that injects t
 
 4. **subagent-driven-development** or **executing-plans** - Activates with plan. Dispatches fresh subagent per task with two-stage review (spec compliance, then code quality), or executes in batches with human checkpoints.
 
-5. **cross-model-review** or **external-model-workers** - Activates when you want opt-in external Claude/Gemini review or task execution. External review stays read-only; external workers run in isolated worktrees with write-scope enforcement.
+5. **cross-model-review** or **external-model-workers** - Activates when you want opt-in external Claude/Gemini review or task execution. External review stays read-only; external workers run in isolated worktrees with write-scope enforcement, local verification, and controller-managed merge-back.
 
 6. **test-driven-development** - Activates during implementation. Enforces RED-GREEN-REFACTOR: write failing test, watch it fail, write minimal code, watch it pass, commit. Deletes code written before tests.
 
@@ -222,7 +222,7 @@ The Pi package loads the Superpowers skills and a small extension that injects t
 - **executing-plans** - Batch execution with checkpoints
 - **dispatching-parallel-agents** - Concurrent subagent workflows
 - **cross-model-review** - Read-only Claude/Gemini review for specs, plans, diffs, and release checks
-- **external-model-workers** - Opt-in Claude/Gemini worker orchestration in isolated task worktrees
+- **external-model-workers** - Opt-in Claude/Gemini worker orchestration in isolated task worktrees, including a controller wrapper for end-to-end task execution
 - **requesting-code-review** - Pre-review checklist
 - **receiving-code-review** - Responding to feedback
 - **using-git-worktrees** - Parallel development branches

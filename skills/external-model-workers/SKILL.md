@@ -49,6 +49,9 @@ task is a good fit for an external model.
 
 ## Wrapper
 
+Use the low-level worker wrapper when a controller already created the
+worktree and chose the role:
+
 ```powershell
 .\skills\external-model-workers\scripts\run-worker-with-model.ps1 `
   -Provider claude `
@@ -59,6 +62,24 @@ task is a good fit for an external model.
   -WriteScope src\feature.ts,tests\feature.test.ts `
   -ReportFile .superpowers\sdd\task-2-report.md
 ```
+
+Use the controller wrapper when you want the full external task lifecycle:
+worktree creation, worker dispatch, write-scope validation, local
+verification, commit, and merge-back.
+
+```powershell
+.\skills\external-model-workers\scripts\orchestrate-external-task.ps1 `
+  -Provider gemini `
+  -PlanPath .superpowers\plans\feature-plan.md `
+  -TaskId task-2 `
+  -TaskBriefPath .superpowers\sdd\task-2-brief.md `
+  -RepoRoot . `
+  -VerificationCommand "npm test -- feature" `
+  -CommitMessage "task(task-2): implement feature"
+```
+
+The controller reads `write_scope` from the plan metadata and rejects
+out-of-scope file changes before merge.
 
 ## Worker Roles
 

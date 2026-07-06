@@ -392,12 +392,14 @@ Claude Code shape is universal. Compare `hooks/hooks.json` and
 Claude Code uses. Match your `hooks-<harness>.json` to whichever existing file is
 closest, not to a single canonical template.
 
-The hook **command string references a harness-provided plugin-root variable**,
-and its name differs per harness: `hooks.json` uses `${CLAUDE_PLUGIN_ROOT}`,
-`hooks-cursor.json` uses a relative path. Use
-whatever your harness exports. (The `session-start` script re-derives the root
-itself via `dirname`, so the script body doesn't depend on this — but the
-command in the manifest does.)
+The hook **command string is interpreted by the harness's shell**. Prefer a
+relative command when the harness resolves it from the plugin root, as
+`hooks.json` and `hooks-cursor.json` do with `./hooks/run-hook.cmd`; this keeps
+Windows `cmd.exe` from parsing metacharacters in the expanded install path.
+When a harness requires an explicit plugin-root variable, use whatever that
+harness exports. (The `session-start` script re-derives the root itself via
+`dirname`, so the script body doesn't depend on this — but the command in the
+manifest does.)
 
 **Discovering the harness's contract.** The three facts above — env var, JSON
 field/nesting, matcher strings — are the harness's contract, not Superpowers',

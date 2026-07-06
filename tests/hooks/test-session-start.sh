@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 HOOK_UNDER_TEST="$REPO_ROOT/hooks/session-start"
 WRAPPER_UNDER_TEST="$REPO_ROOT/hooks/run-hook.cmd"
+HOOK_CONFIG_UNDER_TEST="$REPO_ROOT/hooks/hooks.json"
 
 FAILURES=0
 TEST_ROOT="$(mktemp -d)"
@@ -141,7 +142,26 @@ for (const forbiddenText of forbiddenTexts) {
     fi
 }
 
+assert_claude_hook_command_is_relative() {
+    local command
+
+    command="$(node -e '
+const fs = require("fs");
+const hooks = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+process.stdout.write(hooks.hooks.SessionStart[0].hooks[0].command);
+' "$HOOK_CONFIG_UNDER_TEST")"
+
+    if [[ "$command" == './hooks/run-hook.cmd session-start' ]]; then
+        pass "Claude Code hook command is relative to avoid cmd.exe metacharacters in plugin paths"
+    else
+        fail "Claude Code hook command is relative to avoid cmd.exe metacharacters in plugin paths"
+        echo "    got: $command"
+    fi
+}
+
 echo "SessionStart hook output tests"
+
+assert_claude_hook_command_is_relative
 
 claude_home="$(make_home claude-code)"
 assert_command_output \
@@ -162,6 +182,16 @@ assert_command_output \
     "$wrapper_home" \
     CLAUDE_PLUGIN_ROOT="$REPO_ROOT" \
     bash "$WRAPPER_UNDER_TEST" session-start
+
+relative_wrapper_home="$(make_home run-hook-relative)"
+assert_command_output \
+    "relative hook command dispatches from the plugin root" \
+    "nested" \
+    "" \
+    "" \
+    "$relative_wrapper_home" \
+    CLAUDE_PLUGIN_ROOT="$REPO_ROOT" \
+    bash -c 'cd "$1" && ./hooks/run-hook.cmd session-start' _ "$REPO_ROOT"
 
 cursor_home="$(make_home cursor)"
 assert_command_output \

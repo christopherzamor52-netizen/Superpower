@@ -41,7 +41,7 @@ hooks/
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd\" session-start",
+            "command": "./hooks/run-hook.cmd session-start",
             "async": false
           }
         ]
@@ -51,7 +51,9 @@ hooks/
 }
 ```
 
-The path is quoted because `${CLAUDE_PLUGIN_ROOT}` may contain spaces.
+The command is relative to the plugin root so the outer shell never sees the
+expanded plugin install path. On Windows, that avoids `cmd.exe` metacharacter
+parsing for user profile paths that contain characters such as parentheses.
 
 ## How `run-hook.cmd` Works at a High Level
 

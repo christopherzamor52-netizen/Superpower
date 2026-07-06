@@ -71,6 +71,38 @@ main() {
         echo "    staged: $staged"
     fi
 
+    mkdir -p "$repo/a" "$repo/b"
+    printf '# Plan A\n' > "$repo/a/plan.md"
+    printf '# Plan B\n' > "$repo/b/plan.md"
+
+    local plan_a_dir plan_b_dir
+    plan_a_dir="$(cd "$repo" && "$SDD_SCRIPTS/sdd-workspace" a/plan.md)"
+    plan_b_dir="$(cd "$repo" && "$SDD_SCRIPTS/sdd-workspace" b/plan.md)"
+    if [[ "$plan_a_dir" == "$repo/.superpowers/sdd/"* && "$plan_b_dir" == "$repo/.superpowers/sdd/"* && "$plan_a_dir" != "$plan_b_dir" ]]; then
+        pass "plan-scoped workspaces are distinct for plans with the same basename"
+    else
+        fail "plan-scoped workspaces are distinct for plans with the same basename"
+        echo "    a: $plan_a_dir"
+        echo "    b: $plan_b_dir"
+    fi
+
+    git init -q -b main "$TEST_ROOT/plan-only-repo"
+    local plan_only_repo plan_only_dir plan_only_status
+    plan_only_repo="$(cd "$TEST_ROOT/plan-only-repo" && git rev-parse --show-toplevel)"
+    printf '# Plan\n' > "$plan_only_repo/plan.md"
+    ( cd "$plan_only_repo" \
+        && git add plan.md \
+        && git -c user.email=t@example.com -c user.name=t -c commit.gpgsign=false commit -qm plan )
+    plan_only_dir="$(cd "$plan_only_repo" && "$SDD_SCRIPTS/sdd-workspace" plan.md)"
+    printf 'artifact\n' > "$plan_only_dir/artifact.md"
+    plan_only_status="$(cd "$plan_only_repo" && git status --porcelain)"
+    if [[ -z "$plan_only_status" ]]; then
+        pass "plan-scoped workspace is invisible on first use"
+    else
+        fail "plan-scoped workspace is invisible on first use"
+        echo "    status: $plan_only_status"
+    fi
+
     cat > "$repo/plan.md" <<'PLAN'
 # Plan
 
@@ -89,6 +121,14 @@ PLAN
             echo "    got: $brief_path"
             ;;
     esac
+    if [[ "$(dirname "$brief_path")" == "$(cd "$repo" && "$SDD_SCRIPTS/sdd-workspace" plan.md)" && "$(dirname "$brief_path")" != "$dir" ]]; then
+        pass "task-brief defaults to the plan-scoped workspace"
+    else
+        fail "task-brief defaults to the plan-scoped workspace"
+        echo "    brief: $brief_path"
+        echo "    legacy: $dir"
+        echo "    workspace: $(cd "$repo" && "$SDD_SCRIPTS/sdd-workspace" plan.md)"
+    fi
 
     local git_id=(-c user.email=t@example.com -c user.name=t -c commit.gpgsign=false)
     ( cd "$repo" \
@@ -97,7 +137,7 @@ PLAN
         && printf 'y\n' > f && git add f \
         && git "${git_id[@]}" commit -qm c2 )
     local rp_out rp_path
-    rp_out="$(cd "$repo" && "$SDD_SCRIPTS/review-package" HEAD~1 HEAD)"
+    rp_out="$(cd "$repo" && SDD_PLAN_ID=plan.md "$SDD_SCRIPTS/review-package" HEAD~1 HEAD)"
     rp_path="$(printf '%s\n' "$rp_out" | sed -n 's/^wrote \(.*\): [0-9].*$/\1/p')"
     case "$rp_path" in
         "$repo/.superpowers/sdd/"*) pass "review-package writes its diff under the workspace" ;;
@@ -106,6 +146,14 @@ PLAN
             echo "    got: $rp_path"
             ;;
     esac
+    if [[ "$(dirname "$rp_path")" == "$(cd "$repo" && "$SDD_SCRIPTS/sdd-workspace" plan.md)" && "$(dirname "$rp_path")" != "$dir" ]]; then
+        pass "review-package honors SDD_PLAN_ID for plan-scoped output"
+    else
+        fail "review-package honors SDD_PLAN_ID for plan-scoped output"
+        echo "    review: $rp_path"
+        echo "    legacy: $dir"
+        echo "    workspace: $(cd "$repo" && "$SDD_SCRIPTS/sdd-workspace" plan.md)"
+    fi
 
     # --- Worktree isolation: a linked worktree resolves its own workspace ---
     local wt="$TEST_ROOT/wt"

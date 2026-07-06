@@ -7,6 +7,7 @@
 # Usage: review-package BASE HEAD [OUTFILE]
 # Default OUTFILE: <repo-root>/.superpowers/sdd/review-<base7>..<head7>.diff
 # (named per range, so a re-review after fixes gets a distinct fresh file).
+# Set SDD_PLAN_ID=PLAN_FILE to write under that plan's scoped workspace.
 set -euo pipefail
 
 if [ $# -lt 2 ] || [ $# -gt 3 ]; then

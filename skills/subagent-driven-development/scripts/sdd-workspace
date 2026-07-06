@@ -12,11 +12,37 @@
 # Single source of truth for the workspace location, so task-brief and
 # review-package cannot drift to different directories.
 #
-# Usage: sdd-workspace
+# Usage: sdd-workspace [PLAN_ID]
+#
+# With PLAN_ID (or SDD_PLAN_ID), artifacts are scoped to a stable
+# plan-specific subdirectory so concurrent plans in the same worktree do not
+# overwrite each other's briefs, reports, review packages, or progress ledger.
 set -euo pipefail
 
 root=$(git rev-parse --show-toplevel)
 dir="$root/.superpowers/sdd"
+
+plan_id="${1:-${SDD_PLAN_ID:-}}"
+if [ -n "$plan_id" ]; then
+  if [ -e "$plan_id" ]; then
+    plan_dir=$(cd "$(dirname "$plan_id")" && pwd -P)
+    plan_id="$plan_dir/$(basename "$plan_id")"
+  fi
+
+  stem=$(basename "$plan_id")
+  stem=${stem%.*}
+  slug=$(printf '%s' "$stem" \
+    | tr '[:upper:]' '[:lower:]' \
+    | sed 's/[^a-z0-9._-]/-/g; s/--*/-/g; s/^-//; s/-$//' \
+    | cut -c1-80)
+  if [ -z "$slug" ]; then
+    slug=plan
+  fi
+
+  checksum=$(printf '%s' "$plan_id" | cksum | awk '{print $1}')
+  dir="$dir/${slug}-${checksum}"
+fi
+
 mkdir -p "$dir"
 printf '*\n' > "$dir/.gitignore"
 cd "$dir" && pwd

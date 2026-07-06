@@ -98,6 +98,19 @@
           border-top: 1px solid #141a24; font-size: 12px; }
   .drow span { color: #556170; } .drow b { font-weight: 500; word-break: break-word; color: #aeb9c6; }
   .drow a { color: #93c5fd; text-decoration: none; } .drow a:hover { text-decoration: underline; }
+  /* ---- kanban view: state columns sharing the card palette ---- */
+  #kb { position: absolute; inset: 0; overflow: auto; padding: .8rem;
+        display: flex; gap: .7rem; align-items: flex-start; }
+  #kb[hidden] { display: none; }
+  .kbcol { flex: 0 0 232px; background: #0a0e16; border: 1px solid #18202c;
+           border-top: 2px solid var(--bd, #232c3a); border-radius: .6rem;
+           padding: .45rem .45rem .1rem; }
+  .kbhead { display: flex; justify-content: space-between; align-items: baseline; gap: .4rem;
+            padding: .1rem .3rem .4rem; font-size: 11px; text-transform: uppercase;
+            letter-spacing: .08em; color: var(--tx, #7d8896); }
+  .kbcount { color: #556170; font-size: 10px; letter-spacing: 0; text-transform: none; }
+  #kb .node { position: static; width: 100%; min-height: 0; margin-bottom: .45rem; }
+  button.act.on { background: rgba(59,130,246,.16); border-color: #3b82f6; color: #93c5fd; }
   /* ---- footer: edge legend + meta ---- */
   #foot { display: flex; gap: .9rem; align-items: center; flex-wrap: wrap; padding: .25rem .85rem;
           border-top: 1px solid #18202c; background: #0a0a14; font-size: 11px; color: #556170; }
@@ -114,13 +127,18 @@
   <span id="hcounts" class="muted"></span>
   <span id="chips"></span>
   <span class="ctls">
-    <button class="act" id="zin" title="zoom in">+</button>
-    <button class="act" id="zout" title="zoom out">−</button>
-    <button class="act" id="fit">fit</button>
+    <button class="act on" id="vgraph">graph</button>
+    <button class="act" id="vkanban">kanban</button>
+    <span id="gctls">
+      <button class="act" id="zin" title="zoom in">+</button>
+      <button class="act" id="zout" title="zoom out">−</button>
+      <button class="act" id="fit">fit</button>
+    </span>
   </span>
 </div>
 <div id="stage">
   <div id="cy"></div>
+  <div id="kb" hidden></div>
   <aside id="detail" hidden></aside>
 </div>
 <div id="foot">
@@ -293,6 +311,64 @@
     applyTransform();
   }
 
+  // ---- kanban: the same tickets and filters, pivoted into state columns ----
+  // Chips keep working (a hidden state's column drops out — done is hidden by
+  // default here too); epic collapse is a graph concept and is ignored.
+  var KB_STATES = ["ready-for-agent", "in-progress", "in-review", "blocked",
+                   "needs-info", "deferred", "done", "wontfix"];
+  var KB_CORE = { "ready-for-agent": 1, "in-progress": 1, "in-review": 1, "done": 1 };
+  function kbCard(n) {
+    var card = el("div", null, "node " + n.cls);
+    var head = el("div", null, "node-head");
+    head.appendChild(el("div", n.id, "node-id"));
+    head.appendChild(el("span", BADGE[n.cls] || n.state, "node-badge"));
+    card.appendChild(head);
+    card.appendChild(el("div", n.title, "node-title"));
+    var bits = [];
+    if (epicById[n.id]) bits.push("epic · " + epicById[n.id].descendants.length);
+    if (n.cls === "s_wait") bits.push(n.label);
+    if (n.category) bits.push(n.category);
+    if (n.pr) bits.push("PR");
+    card.appendChild(el("div", bits.join(" · "), "node-meta"));
+    card.appendChild(el("div", null, "node-tokenbar"));
+    card.title = n.id + " · " + n.label;
+    card.addEventListener("click", function (ev) { ev.stopPropagation(); showDetail(n); });
+    return card;
+  }
+  function renderKanban() {
+    var kb = document.getElementById("kb");
+    kb.textContent = "";
+    KB_STATES.forEach(function (s) {
+      if (hiddenStates[s]) return;
+      var items = BOARD.nodes.filter(function (n) {
+        return n.state === s && !(eligibleOnly && !n.eligible);
+      });
+      if (!items.length && !KB_CORE[s]) return;     // paused/terminal columns only when populated
+      if (s === "ready-for-agent")                  // dispatchables float to the top
+        items = items.slice().sort(function (a, b) { return (b.eligible ? 1 : 0) - (a.eligible ? 1 : 0); });
+      var col = el("div", null, "kbcol " + (STATE_CLS[s] || ""));
+      var head = el("div", null, "kbhead");
+      head.appendChild(el("span", s));
+      var elig = items.filter(function (n) { return n.eligible; }).length;
+      head.appendChild(el("span", items.length + (s === "ready-for-agent" && elig ? " · " + elig + " eligible" : ""), "kbcount"));
+      col.appendChild(head);
+      items.forEach(function (n) { col.appendChild(kbCard(n)); });
+      kb.appendChild(col);
+    });
+  }
+
+  var view = "graph";
+  function renderAll() { if (view === "graph") render(); else renderKanban(); }
+  function setView(v) {
+    view = v;
+    host.style.display = v === "graph" ? "" : "none";
+    document.getElementById("kb").hidden = v !== "kanban";
+    document.getElementById("gctls").style.display = v === "graph" ? "" : "none";
+    document.getElementById("vgraph").classList.toggle("on", v === "graph");
+    document.getElementById("vkanban").classList.toggle("on", v === "kanban");
+    renderAll();
+  }
+
   function applyTransform() {
     if (canvas) canvas.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
   }
@@ -310,6 +386,7 @@
   // Frame the visible graph: fit to content, centered, never past 100% (a tiny
   // board stays readable rather than blown up).
   function fitView() {
+    if (view !== "graph") return;
     var r = host.getBoundingClientRect();
     if (r.width < 10 || r.height < 10) { tx = PAD; ty = PAD; k = 1; applyTransform(); return; }
     var b = contentBounds(), pad = 56;
@@ -393,12 +470,12 @@
       b.onclick = function () {
         if (hiddenStates[s]) { delete hiddenStates[s]; b.classList.remove("off"); }
         else { hiddenStates[s] = true; b.classList.add("off"); }
-        render();
+        renderAll();
       };
       c.appendChild(b);
     });
     var eb = el("button", "ELIGIBLE only", "chip");
-    eb.onclick = function () { eligibleOnly = !eligibleOnly; eb.classList.toggle("on", eligibleOnly); render(); };
+    eb.onclick = function () { eligibleOnly = !eligibleOnly; eb.classList.toggle("on", eligibleOnly); renderAll(); };
     c.appendChild(eb);
   }
 
@@ -422,9 +499,14 @@
   host.addEventListener("click", function (e) {
     if (!e.target.closest(".node")) document.getElementById("detail").hidden = true;
   });
+  document.getElementById("kb").addEventListener("click", function (e) {
+    if (!e.target.closest(".node")) document.getElementById("detail").hidden = true;
+  });
   document.getElementById("zin").onclick = function () { zoomBy(1.2); };
   document.getElementById("zout").onclick = function () { zoomBy(1 / 1.2); };
   document.getElementById("fit").onclick = fitView;
+  document.getElementById("vgraph").onclick = function () { setView("graph"); };
+  document.getElementById("vkanban").onclick = function () { setView("kanban"); };
   window.addEventListener("resize", fitView);
 
   document.getElementById("meta").textContent =

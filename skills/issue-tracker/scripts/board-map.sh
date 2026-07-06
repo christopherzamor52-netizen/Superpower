@@ -8,8 +8,9 @@
 #              doperpowers/issue-tracker/ (gitignored — render caches never
 #              commit): BOARD.html — the primary view: an interactive
 #              layered-DAG (pan/zoom, click a node for detail, filter by state,
-#              collapse epics), opened in a browser; and BOARD.md — a minimal
-#              node/state table.
+#              collapse epics) with a kanban toggle (the same tickets pivoted
+#              into state columns), opened in a browser; and BOARD.md — a
+#              minimal node/state table.
 #
 # Reading BOARD.html: dependencies flow left→right (a blocker sits left of its
 # dependents). Card color = state; ELIGIBLE (ready-for-agent + all blockers done,

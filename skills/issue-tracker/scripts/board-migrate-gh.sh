@@ -117,8 +117,18 @@ for tid, n in sorted(legacy.items(), key=lambda kv: int(kv[0][1:])):
                     B.edit_labels(num, remove=[B.STATUS_PREFIX + s for s in gn["status_labels"]]),
                     B.close(num, want)))
         elif have != want:
-            act("%s: status label → %s (was %s)" % (ref, want, have),
-                lambda num=num, gn=gn, want=want: B.set_state_label(num, gn, want))
+            # Happy-path progression: GitHub-side automation (assign→in-progress,
+            # PR→in-review) is what the legacy board historically lagged behind —
+            # never downgrade an issue GitHub says is further along. Paused board
+            # states (deferred/blocked/needs-info) are deliberate decisions and
+            # still win.
+            HAPPY = {"ready-for-agent": 0, "in-progress": 1, "in-review": 2}
+            if want in HAPPY and have in HAPPY and HAPPY[have] > HAPPY[want]:
+                print("note  %s: GitHub is further along (%s > board %s) — GitHub wins, label kept"
+                      % (ref, have, want))
+            else:
+                act("%s: status label → %s (was %s)" % (ref, want, have),
+                    lambda num=num, gn=gn, want=want: B.set_state_label(num, gn, want))
 
     # edges (only for live nodes on both ends)
     if gn is not None:

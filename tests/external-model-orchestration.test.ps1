@@ -6,6 +6,7 @@ $reviewSkill = Join-Path $root "skills/cross-model-review/SKILL.md"
 $reviewScript = Join-Path $root "skills/cross-model-review/scripts/review-with-model.ps1"
 $workerSkill = Join-Path $root "skills/external-model-workers/SKILL.md"
 $workerScript = Join-Path $root "skills/external-model-workers/scripts/run-worker-with-model.ps1"
+$orchestratorScript = Join-Path $root "skills/external-model-workers/scripts/orchestrate-external-task.ps1"
 
 function Assert-True {
   param(
@@ -34,6 +35,7 @@ Assert-True (Test-Path $reviewSkill) "cross-model-review skill must exist."
 Assert-True (Test-Path $reviewScript) "review-with-model.ps1 must exist."
 Assert-True (Test-Path $workerSkill) "external-model-workers skill must exist."
 Assert-True (Test-Path $workerScript) "run-worker-with-model.ps1 must exist."
+Assert-True (Test-Path $orchestratorScript) "orchestrate-external-task.ps1 must exist."
 Assert-True (Test-Path $geminiReference) "Gemini bootstrap reference file must exist for GEMINI.md imports."
 
 $reviewText = Get-Content -Raw $reviewSkill
@@ -121,6 +123,7 @@ Report path: mocked
     git init | Out-Null
     git config user.name "Codex"
     git config user.email "codex@example.com"
+    git config core.autocrlf false
     New-Item -ItemType Directory -Path (Join-Path $repoRoot "src") | Out-Null
     Set-Content -Path (Join-Path $repoRoot "src/worker.ts") -Value "export const worker = 1`n" -Encoding UTF8
     git add .
@@ -161,6 +164,109 @@ Report path: mocked
   Assert-Contains $workerPrompt "You are an external implementer working inside an isolated task worktree." "worker script must send the implementer prompt."
   Assert-Contains $workerPrompt "Allowed write scope:" "worker script must include write scope."
   Assert-Contains $workerPrompt "Write your full report to:" "worker script must include the report contract."
+
+  $orchestratorProvider = Join-Path $temp "orchestrator-provider.ps1"
+  @(
+    'param()',
+    '',
+    '$prompt = [Console]::In.ReadToEnd()',
+    '$worktreeMatch = [regex]::Match($prompt, "Worktree path:\s*(?<path>[^\r\n]+)")',
+    '$reportMatch = [regex]::Match($prompt, "Write your full report to:\s*(?<path>[^\r\n]+)")',
+    'if (-not $worktreeMatch.Success -or -not $reportMatch.Success) {',
+    '  throw "mock provider could not find worktree or report path"',
+    '}',
+    '',
+    '$worktree = $worktreeMatch.Groups["path"].Value.Trim()',
+    '$report = $reportMatch.Groups["path"].Value.Trim()',
+    '$utf8NoBom = New-Object System.Text.UTF8Encoding($false)',
+    '[System.IO.File]::WriteAllText((Join-Path $worktree "app.txt"), "hello world`n", $utf8NoBom)',
+    '@''',
+    'Status: DONE',
+    'Tests run: verification deferred to controller',
+    'Files changed:',
+    '- app.txt',
+    '''@ | Set-Content -Path $report -Encoding UTF8',
+    '@"',
+    'Status: DONE',
+    'Test summary: mocked',
+    'Report path: $report',
+    '"@'
+  ) | Set-Content -Path $orchestratorProvider -Encoding UTF8
+
+  $orchestratorPlan = Join-Path $temp "orchestrator-plan.md"
+  @'
+# Orchestrator Plan
+
+### Task 1: Greeting
+
+```yaml
+task_metadata:
+  id: task-1
+  title: Greeting
+  depends_on: []
+  write_scope:
+    - app.txt
+  risk_level: low
+  review_required:
+    - spec
+    - code_quality
+  external_review:
+    claude: false
+    gemini: false
+```
+'@ | Set-Content -Path $orchestratorPlan -Encoding UTF8
+
+  $repo2 = Join-Path $temp "repo-orchestrator"
+  New-Item -ItemType Directory -Path $repo2 | Out-Null
+  Push-Location $repo2
+  try {
+    git init | Out-Null
+    git config user.name "Codex"
+    git config user.email "codex@example.com"
+    git config core.autocrlf false
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText((Join-Path $repo2 "app.txt"), "hello`n", $utf8NoBom)
+    git add app.txt
+    git commit -m "init" | Out-Null
+  }
+  finally {
+    Pop-Location
+  }
+
+  $orchestratorBrief = Join-Path $temp "orchestrator-brief.md"
+  @'
+### Task 1: Greeting
+
+Change `app.txt` so its contents become exactly `hello world` followed by a newline.
+'@ | Set-Content -Path $orchestratorBrief -Encoding UTF8
+
+  & $orchestratorScript `
+    -Provider claude `
+    -PlanPath $orchestratorPlan `
+    -TaskId task-1 `
+    -TaskBriefPath $orchestratorBrief `
+    -RepoRoot $repo2 `
+    -VerificationCommand "Get-Content -Raw app.txt" `
+    -CommitMessage "test: orchestrate external task" `
+    -CommandOverride "powershell -File `"$orchestratorProvider`"" `
+    -Json | Out-Null
+
+  Assert-True ($LASTEXITCODE -eq 0) "orchestrator should complete successfully with a mock provider."
+
+  Push-Location $repo2
+  try {
+    $finalContents = Get-Content -Raw "app.txt"
+    if ($finalContents -ne "hello world`n") {
+      throw "orchestrator must merge the worker change back into the repo root."
+    }
+    $history = git log --oneline -1
+    if ($history -notmatch "test: orchestrate external task") {
+      throw "orchestrator must create a merge-ready commit."
+    }
+  }
+  finally {
+    Pop-Location
+  }
 }
 finally {
   Remove-Item -Recurse -Force $temp

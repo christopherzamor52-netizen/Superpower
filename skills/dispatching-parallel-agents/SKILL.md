@@ -13,6 +13,8 @@ When you have multiple unrelated failures (different test files, different subsy
 
 **Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
 
+For implementation-plan tasks, parallel_safe is computed, never authored. The controller must derive parallel eligibility from `task_metadata` before dispatch.
+
 ## When to Use
 
 ```dot
@@ -38,11 +40,28 @@ digraph when_to_use {
 - Multiple subsystems broken independently
 - Each problem can be understood without context from others
 - No shared state between investigations
+- Implementation-plan tasks have no dependency relationship, no overlapping write_scope entries, and risk_level is low
+- medium risk tasks are parallel only when they do not touch shared contracts, shared architecture, APIs, schemas, migrations, storage, security, or deletion behavior
 
 **Don't use when:**
 - Failures are related (fix one might fix others)
 - Need to understand full system state
 - Agents would interfere with each other
+- Any task is high risk, depends on unfinished work, defines a shared contract, or may change downstream requirements
+
+## Parallel Eligibility Gate
+
+Before dispatching implementation tasks in parallel:
+
+1. Run metadata validation on the plan.
+2. Confirm every candidate's dependencies are complete.
+3. Confirm candidates have no dependency relationship with each other.
+4. Confirm candidates have no overlapping write_scope entries.
+5. Confirm each candidate can be verified independently.
+6. Confirm risk_level is low, or for medium risk tasks confirm they do not touch shared contracts or shared architecture.
+7. Reject all high-risk tasks from the parallel batch and route them through sequential subagent-driven-development.
+
+If any check fails, do not dispatch in parallel. Use sequential execution until the dependency or scope conflict is resolved.
 
 ## The Pattern
 

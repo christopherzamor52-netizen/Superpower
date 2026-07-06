@@ -96,6 +96,46 @@ before execution begins, not one interrupt per discovery mid-plan. If the
 scan is clean, proceed without comment. The review loop remains the net for
 conflicts that only emerge from implementation.
 
+## Controller Metadata Validation
+
+Before dispatching any implementation task, validate the plan metadata:
+
+- all task IDs are unique
+- all depends_on references exist
+- dependency graph has no circular dependencies
+- write_scope is present for every implementation task
+- risk_level is one of `low`, `medium`, or `high`
+- high-risk tasks require both `spec` and `code_quality` review
+- high-risk tasks are never dispatched in parallel
+- external_review only creates review gates; Claude and Gemini remain external reviewers only
+
+Use `scripts/validate-plan-metadata.ps1 -PlanPath <plan>` when PowerShell is available. If the script reports errors, stop execution and fix the implementation plan before dispatch.
+
+## Deterministic Routing
+
+Compute routing from task metadata; never trust a hand-written `parallel_safe` flag.
+
+Use sequential subagent-driven-development when:
+
+- a task has `risk_level: high`
+- a task depends on unfinished work
+- a task defines or touches shared contracts, APIs, schemas, migrations, storage, security, or deletion behavior
+- review feedback may change downstream tasks
+- a task's write_scope overlaps any other active task
+
+Parallel dispatch is allowed only after metadata validation confirms complete dependencies, non-overlapping write_scope, independently verifiable tasks, and a risk profile that allows parallel work.
+
+## Write-Scope Enforcement
+
+Each implementer prompt must include the task's declared write_scope and state that edits outside it are forbidden unless the controller updates the plan first.
+
+After each task, inspect the actual changed files with `git diff --name-only <base>..<head>` or pass the changed files to `scripts/validate-plan-metadata.ps1 -PlanPath <plan> -ActiveTaskIds <task-id> -ChangedFiles <files>`. If any file is outside write_scope:
+
+- pause the task
+- review the out-of-scope change
+- either update metadata and re-approve the task
+- or reject the out-of-scope change before continuing
+
 ## Model Selection
 
 Use the least powerful model that can handle each role to conserve cost and increase speed.

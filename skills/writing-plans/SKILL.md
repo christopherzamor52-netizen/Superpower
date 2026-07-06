@@ -42,6 +42,48 @@ deliverable needs them; split only where a reviewer could meaningfully
 reject one task while approving its neighbor. Each task ends with an
 independently testable deliverable.
 
+## Task Metadata
+
+Every implementation task MUST start with parser-friendly metadata before
+the **Files** block. The controller uses this metadata to validate
+dependencies, enforce write scope, compute routing, and decide whether
+external review is required. Do not write `parallel_safe` in plans; controllers compute parallel eligibility from metadata.
+
+```yaml
+task_metadata:
+  id: task-1
+  title: Add streaming chat events
+  depends_on: []
+  write_scope:
+    - worker/meeting_cockpit/chat.py
+    - worker/tests/test_chat_events.py
+  risk_level: high
+  review_required:
+    - spec
+    - code_quality
+  external_review:
+    claude: false
+    gemini: false
+```
+
+Field rules:
+
+- `id`: unique stable task identifier, formatted as `task-N`.
+- `title`: human-readable task title matching the task heading.
+- `depends_on`: list of task IDs that must complete before this task can start; use `[]` when there are none.
+- `write_scope`: exact files or narrow directories this task may create or modify.
+- `risk_level`: one of `low`, `medium`, or `high`.
+- `review_required`: include `spec`, `code_quality`, or both; high-risk tasks require both.
+- `external_review`: set `claude` or `gemini` to `true` only for external reviewer gates. Claude and Gemini are reviewers only; they do not implement or mutate files.
+
+Risk rules:
+
+- `low`: may run in parallel when dependencies are complete and write scopes do not overlap.
+- `medium`: may run in parallel only when it does not touch shared contracts, shared architecture, APIs, schemas, migrations, storage, security, or deletion behavior.
+- `high`: always sequential. Requires spec review and code-quality review, with optional external Claude/Gemini review.
+
+Metadata Validation: During plan self-review, confirm all task IDs are unique, all depends_on references exist, the dependency graph has no circular dependencies, every implementation task has write_scope, high-risk tasks require spec and code_quality review, and no task authors `parallel_safe`.
+
 ## Bite-Sized Task Granularity
 
 **Each step is one action (2-5 minutes):**
@@ -80,6 +122,23 @@ include this section.]
 
 ````markdown
 ### Task N: [Component Name]
+
+```yaml
+task_metadata:
+  id: task-N
+  title: Component Name
+  depends_on: []
+  write_scope:
+    - exact/path/to/file.py
+    - tests/exact/path/to/test.py
+  risk_level: low
+  review_required:
+    - spec
+    - code_quality
+  external_review:
+    claude: false
+    gemini: false
+```
 
 **Files:**
 - Create: `exact/path/to/file.py`

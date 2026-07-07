@@ -12,11 +12,27 @@
 # Single source of truth for the workspace location, so task-brief and
 # review-package cannot drift to different directories.
 #
-# Usage: sdd-workspace
+# An optional --ns NAMESPACE scopes the workspace to one plan/epic's
+# subdirectory, so two unrelated task sequences running concurrently in the
+# same checkout (each numbering tasks from 1) don't overwrite each other's
+# briefs, reports, and ledger.
+#
+# Usage: sdd-workspace [--ns NAMESPACE]
 set -euo pipefail
 
+ns=""
+if [ "${1:-}" = "--ns" ]; then
+  [ $# -eq 2 ] || { echo "usage: sdd-workspace [--ns NAMESPACE]" >&2; exit 2; }
+  ns=$2
+elif [ $# -ne 0 ]; then
+  echo "usage: sdd-workspace [--ns NAMESPACE]" >&2
+  exit 2
+fi
+
 root=$(git rev-parse --show-toplevel)
-dir="$root/.superpowers/sdd"
+base="$root/.superpowers/sdd"
+dir="$base"
+[ -n "$ns" ] && dir="$base/$ns"
 mkdir -p "$dir"
-printf '*\n' > "$dir/.gitignore"
+printf '*\n' > "$base/.gitignore"
 cd "$dir" && pwd

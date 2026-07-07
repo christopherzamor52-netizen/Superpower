@@ -4,8 +4,10 @@
 # through the controller's context.
 #
 # Usage: task-brief PLAN_FILE TASK_NUMBER [OUTFILE]
-# Default OUTFILE: <repo-root>/.superpowers/sdd/task-<N>-brief.md
-# (per worktree; concurrent runs in the same working tree share it).
+# Default OUTFILE: <repo-root>/.superpowers/sdd/<plan-slug>/task-<N>-brief.md
+# (per worktree; the workspace is namespaced by PLAN_FILE's basename, so
+# concurrent task sequences from different plans in the same working tree
+# land in different directories instead of colliding on task-<N>-brief.md).
 set -euo pipefail
 
 if [ $# -lt 2 ] || [ $# -gt 3 ]; then
@@ -20,7 +22,9 @@ n=$2
 if [ $# -eq 3 ]; then
   out=$3
 else
-  dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace")
+  slug=$(basename "$plan")
+  slug=${slug%.*}
+  dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace" --ns "$slug")
   out="$dir/task-${n}-brief.md"
 fi
 

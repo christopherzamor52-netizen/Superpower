@@ -84,12 +84,21 @@ checkout's repo.
 | `board-edge.sh <n> --block N \| --unblock N \| --parent N \| --orphan` | re-cut edges after birth (one op per call): add/cut a dependency, move under another epic, or leave one. Rejects self-edges, cycles, ancestor-epic blockers; runs the same epic sweeps as transition |
 | `board-relate.sh <a> <b> [--cut]` | symmetric relates annotation (board:meta) — rendered by board-map, no effect on eligibility |
 | `board-list.sh [state]` | board view; `ELIGIBLE` tag = dispatchable |
-| `board-map.sh [--write]` | human telemetry. `--write` renders **`BOARD.html`** (interactive layered-DAG: pan/zoom, node detail, state filter, epic collapse) and **`BOARD.md`** (table) into the gitignored render dir. No argument prints the table |
+| `board-map.sh [--write]` | human telemetry. `--write` renders **`BOARD.html`** (interactive layered-DAG: pan/zoom, node detail, state filter, epic collapse — plus a kanban view toggle) and **`BOARD.md`** (table) into the gitignored render dir. No argument prints the table |
 | `board-show.sh <n>` | node + issue URL + bound daemon |
 | `board-bind.sh <uuid> <n>` | record which daemon owns the ticket (in the daemon registry) |
 | `board-reconcile.sh` | read-only catch-up: unapplied proposals, orphaned tickets, dispatchables, then a lint pass |
 | `board-lint.sh` | schema invariants over the live board: one status label per open issue, none on closed, notes where required, no dependency cycles. `FAIL … FIX: …` lines, exit 1 |
 | `board-migrate-gh.sh [--board FILE] [--apply]` | one-shot v6→v7 migration: push a legacy `board.json` into GitHub (dry-run by default) |
+
+## Remote board (GitHub Pages)
+
+`board-map.sh --write` renders locally on demand. For an always-current hosted
+view, copy `references/board-pages.yml` into the consumer repo's
+`.github/workflows/` and set Pages → Source to "GitHub Actions": every issue
+event (plus a cron safety net — sub-issue/dependency edits fire no webhook)
+re-renders BOARD.html on a runner and deploys it. Read the template's header
+first — on non-Enterprise plans a Pages site is public even for a private repo.
 
 ## The dispatch loop
 

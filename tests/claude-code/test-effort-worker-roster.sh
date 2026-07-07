@@ -68,10 +68,28 @@ check_drift_guard() {
     done <<< "$refs"
 }
 
+check_effort_section() {
+    echo "--- SDD SKILL.md has Effort Selection section referencing the roster ---"
+    local skill="$SDD_DIR/SKILL.md"
+    grep -q '^## Effort Selection' "$skill" \
+        && pass "SKILL.md has '## Effort Selection'" \
+        || fail "SKILL.md missing '## Effort Selection'"
+    grep -q 'cheapen mechanics, never judgment' "$skill" \
+        && pass "Effort Selection keeps the judgment guardrail" \
+        || fail "Effort Selection missing the judgment guardrail phrase"
+    local level
+    for level in low medium high; do
+        grep -q "worker-${level}-effort" "$skill" \
+            && pass "Effort Selection references worker-${level}-effort" \
+            || fail "Effort Selection missing worker-${level}-effort"
+    done
+}
+
 main() {
     echo "=== Test: effort worker roster ==="
     check_roster
     check_drift_guard
+    check_effort_section
     if [[ "$FAILURES" -gt 0 ]]; then
         echo "FAILED ($FAILURES failure(s))"
         exit 1

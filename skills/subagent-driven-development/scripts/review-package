@@ -4,13 +4,34 @@
 # call. Using the recorded per-task BASE (not HEAD~1) keeps multi-commit
 # tasks intact.
 #
-# Usage: review-package BASE HEAD [OUTFILE]
-# Default OUTFILE: <repo-root>/.superpowers/sdd/review-<base7>..<head7>.diff
+# Usage: review-package [--ns NAMESPACE] BASE HEAD [OUTFILE]
+# Default OUTFILE: <repo-root>/.superpowers/sdd[/NAMESPACE]/review-<base7>..<head7>.diff
 # (named per range, so a re-review after fixes gets a distinct fresh file).
+# Pass --ns with the same namespace used for this task sequence's briefs
+# (scripts/task-brief derives it as PLAN_FILE's basename without extension)
+# so unrelated concurrent task sequences in the same working tree land in
+# different directories.
 set -euo pipefail
 
+ns=""
+args=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --ns)
+      [ $# -ge 2 ] || { echo "usage: review-package [--ns NAMESPACE] BASE HEAD [OUTFILE]" >&2; exit 2; }
+      ns=$2
+      shift 2
+      ;;
+    *)
+      args+=("$1")
+      shift
+      ;;
+  esac
+done
+set -- "${args[@]}"
+
 if [ $# -lt 2 ] || [ $# -gt 3 ]; then
-  echo "usage: review-package BASE HEAD [OUTFILE]" >&2
+  echo "usage: review-package [--ns NAMESPACE] BASE HEAD [OUTFILE]" >&2
   exit 2
 fi
 
@@ -23,7 +44,11 @@ git rev-parse --verify --quiet "$head" >/dev/null || { echo "bad HEAD: $head" >&
 if [ $# -eq 3 ]; then
   out=$3
 else
-  dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace")
+  if [ -n "$ns" ]; then
+    dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace" --ns "$ns")
+  else
+    dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace")
+  fi
   out="$dir/review-$(git rev-parse --short "$base")..$(git rev-parse --short "$head").diff"
 fi
 

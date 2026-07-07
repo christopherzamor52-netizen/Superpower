@@ -133,7 +133,7 @@ that implementer. Single-file mechanical fixes also take the cheapest tier.
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Generate the review package (`scripts/review-package BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
+**DONE:** Generate the review package (`scripts/review-package --ns NAMESPACE BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path. NAMESPACE is PLAN_FILE's basename without its extension — see Durable Progress.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
@@ -179,8 +179,8 @@ final whole-branch review. When you fill a reviewer template:
   test hygiene, review method) — the constraints block is for what THIS
   project's spec demands.
 - Hand the reviewer its diff as a file: run this skill's
-  `scripts/review-package BASE HEAD` and pass the reviewer the file path
-  it prints (or, without bash: `git log --oneline`, `git diff --stat`,
+  `scripts/review-package --ns NAMESPACE BASE HEAD` and pass the reviewer
+  the file path it prints (or, without bash: `git log --oneline`, `git diff --stat`,
   and `git diff -U10` for the range, redirected to one uniquely named
   file). The output never enters your own context, and the reviewer sees
   the commit list, stat summary, and full diff with context in one Read
@@ -201,7 +201,7 @@ final whole-branch review. When you fill a reviewer template:
   Do not dismiss the finding because the plan mandates it, and do not
   dispatch a fix that contradicts the plan without asking.
 - The final whole-branch review gets a package too: run
-  `scripts/review-package MERGE_BASE HEAD` (MERGE_BASE = the commit the
+  `scripts/review-package --ns NAMESPACE MERGE_BASE HEAD` (MERGE_BASE = the commit the
   branch started from, e.g. `git merge-base main HEAD`) and include the
   printed path in the final review dispatch, so the final reviewer reads
   one file instead of re-deriving the branch diff with git commands.
@@ -224,7 +224,8 @@ and is re-read on every later turn. Hand artifacts over as files:
 
 - **Task brief:** before dispatching an implementer, run this skill's
   `scripts/task-brief PLAN_FILE N` — it extracts the task's full text to a
-  uniquely named file and prints the path. Compose the dispatch so the
+  uniquely named file, under a workspace namespaced by PLAN_FILE's basename
+  so unrelated plans never collide, and prints the path. Compose the dispatch so the
   brief stays the single source of requirements. Your dispatch should
   contain: (1) one line on where this task fits in the project; (2) the
   brief path, introduced as "read this first — it is your requirements,
@@ -250,8 +251,18 @@ controllers that lost their place have re-dispatched entire completed task
 sequences — the single most expensive failure observed. Track progress in
 a ledger file, not only in todos.
 
+The scratch workspace (briefs, reports, review packages, and the ledger) is
+namespaced per plan so two unrelated task sequences running concurrently in
+the same working tree — each numbering tasks from 1 — never overwrite each
+other's files. Compute NAMESPACE once, right after reading the plan:
+PLAN_FILE's basename without its extension (e.g.
+`docs/plans/2026-01-01-feature.md` → `2026-01-01-feature`). Reuse this same
+NAMESPACE for every `scripts/review-package --ns NAMESPACE` call and for the
+ledger path below — `scripts/task-brief` derives it automatically from
+PLAN_FILE, so it needs no `--ns` flag.
+
 - At skill start, check for a ledger:
-  `cat "$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"`. Tasks listed there
+  `cat "$(scripts/sdd-workspace --ns NAMESPACE)/progress.md"`. Tasks listed there
   as complete are DONE — do not re-dispatch them; resume at the first task
   not marked complete.
 - When a task's review comes back clean, append one line to the ledger in
@@ -382,8 +393,8 @@ Done!
   dispatch prompt ("treat it as Minor at most") — the plan's example code is
   a starting point, not evidence that its weaknesses were chosen
 - Dispatch a task reviewer without a diff file — generate it first
-  (`scripts/review-package BASE HEAD`) and name the printed path in the
-  prompt
+  (`scripts/review-package --ns NAMESPACE BASE HEAD`) and name the printed
+  path in the prompt
 - Move to next task while the review has open Critical/Important issues
 - Re-dispatch a task the progress ledger already marks complete — check
   the ledger (and `git log`) after any compaction or resume

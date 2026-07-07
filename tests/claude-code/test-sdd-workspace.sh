@@ -107,6 +107,64 @@ PLAN
             ;;
     esac
 
+    # --- Namespacing: unrelated plans in the same checkout don't collide ---
+    cat > "$repo/plan-a.md" <<'PLAN'
+# Plan A
+
+## Task 1: First thing
+
+Do plan A's first thing.
+PLAN
+    cat > "$repo/plan-b.md" <<'PLAN'
+# Plan B
+
+## Task 1: First thing
+
+Do plan B's first thing.
+PLAN
+
+    local out_a path_a out_b path_b
+    out_a="$(cd "$repo" && "$SDD_SCRIPTS/task-brief" plan-a.md 1)"
+    path_a="$(printf '%s\n' "$out_a" | sed -n 's/^wrote \(.*\): [0-9][0-9]* lines$/\1/p')"
+    out_b="$(cd "$repo" && "$SDD_SCRIPTS/task-brief" plan-b.md 1)"
+    path_b="$(printf '%s\n' "$out_b" | sed -n 's/^wrote \(.*\): [0-9][0-9]* lines$/\1/p')"
+
+    if [[ "$path_a" != "$path_b" \
+        && "$path_a" == "$repo/.superpowers/sdd/plan-a/task-1-brief.md" \
+        && "$path_b" == "$repo/.superpowers/sdd/plan-b/task-1-brief.md" ]]; then
+        pass "task-brief namespaces unrelated plans' Task 1 briefs into different files"
+    else
+        fail "task-brief namespaces unrelated plans' Task 1 briefs into different files"
+        echo "    plan-a: $path_a"
+        echo "    plan-b: $path_b"
+    fi
+
+    if grep -q "plan A's first thing" "$path_a" && grep -q "plan B's first thing" "$path_b"; then
+        pass "each namespaced brief holds only its own plan's content"
+    else
+        fail "each namespaced brief holds only its own plan's content"
+    fi
+
+    local ns_dir
+    ns_dir="$(cd "$repo" && "$SDD_SCRIPTS/sdd-workspace" --ns plan-a)"
+    if [[ "$ns_dir" == "$repo/.superpowers/sdd/plan-a" ]]; then
+        pass "sdd-workspace --ns resolves the namespaced subdirectory"
+    else
+        fail "sdd-workspace --ns resolves the namespaced subdirectory"
+        echo "    got: $ns_dir"
+    fi
+
+    local rp_ns_out rp_ns_path
+    rp_ns_out="$(cd "$repo" && "$SDD_SCRIPTS/review-package" --ns plan-a HEAD~1 HEAD)"
+    rp_ns_path="$(printf '%s\n' "$rp_ns_out" | sed -n 's/^wrote \(.*\): [0-9].*$/\1/p')"
+    case "$rp_ns_path" in
+        "$repo/.superpowers/sdd/plan-a/"*) pass "review-package --ns writes its diff under the namespaced subdirectory" ;;
+        *)
+            fail "review-package --ns writes its diff under the namespaced subdirectory"
+            echo "    got: $rp_ns_path"
+            ;;
+    esac
+
     # --- Worktree isolation: a linked worktree resolves its own workspace ---
     local wt="$TEST_ROOT/wt"
     ( cd "$repo" && git worktree add -q "$wt" -b wt-feature )

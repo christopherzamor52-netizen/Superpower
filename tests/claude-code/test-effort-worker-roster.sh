@@ -85,11 +85,31 @@ check_effort_section() {
     done
 }
 
+check_template_wiring() {
+    echo "--- dispatch templates reference the effort roster / Effort Selection ---"
+    grep -q 'Effort Selection' "$SDD_DIR/implementer-prompt.md" \
+        && pass "implementer-prompt references Effort Selection" \
+        || fail "implementer-prompt missing Effort Selection reference"
+    grep -q 'model_reasoning_effort' "$SDD_DIR/implementer-prompt.md" \
+        && pass "implementer-prompt notes Codex model_reasoning_effort" \
+        || fail "implementer-prompt missing Codex effort note"
+    grep -q 'Effort Selection' "$SDD_DIR/task-reviewer-prompt.md" \
+        && pass "task-reviewer-prompt references Effort Selection" \
+        || fail "task-reviewer-prompt missing Effort Selection reference"
+    grep -q 'model_reasoning_effort' "$SDD_DIR/task-reviewer-prompt.md" \
+        && pass "task-reviewer-prompt notes Codex model_reasoning_effort" \
+        || fail "task-reviewer-prompt missing Codex effort note"
+    grep -qi 'effort' "$CODE_REVIEWER" \
+        && pass "code-reviewer template notes effort" \
+        || fail "code-reviewer template missing effort note"
+}
+
 main() {
     echo "=== Test: effort worker roster ==="
     check_roster
     check_drift_guard
     check_effort_section
+    check_template_wiring
     if [[ "$FAILURES" -gt 0 ]]; then
         echo "FAILED ($FAILURES failure(s))"
         exit 1

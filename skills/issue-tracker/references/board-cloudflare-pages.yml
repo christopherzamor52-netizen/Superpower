@@ -1,0 +1,105 @@
+# board-cloudflare-pages.yml — publish the live issue board (BOARD.html) to
+# Cloudflare Pages, gated behind Cloudflare Access (a PRIVATE, team-only URL).
+#
+# Use this instead of board-pages.yml when the consumer repo is PRIVATE: GitHub
+# Pages is unavailable for private repos on Free/most org plans, and cannot be
+# access-restricted below Enterprise. Cloudflare Pages + Access gives a hosted
+# URL that only your team can open — no public exposure of issue titles/notes.
+# (For a PUBLIC repo, board-pages.yml is simpler — no external account needed.)
+#
+# The v7 board's single source of truth is this repo's GitHub Issues;
+# `board-map.sh --write` renders it. This workflow re-renders on every issue
+# event (+ a cron safety net — sub-issue/dependency edits fire no `issues`
+# webhook) and deploys the static board to a Cloudflare Pages project.
+#
+# ── One-time setup (ORDER MATTERS — set up Access BEFORE the first deploy) ────
+#   ⚠ A *.pages.dev URL is public the moment a deployment exists (the project
+#     name is guessable). Configure Cloudflare Access FIRST so the board is
+#     never world-readable, not even for one deploy. Access attaches to the
+#     hostname before the project exists, so it gates the very first deployment.
+#     Deploy-before-Access = a window where every issue title is public.
+#
+#   1. Cloudflare → My Profile → API Tokens → Create Token (Custom):
+#        Permissions: Account · Cloudflare Pages · Edit   (only this)
+#        Account Resources: your account
+#   2. Copy your Cloudflare Account ID (dash URL, or Workers & Pages → account
+#      details).
+#   3. GitHub → repo Settings → Secrets and variables → Actions → New secret:
+#        CLOUDFLARE_API_TOKEN   = <the token from step 1>
+#        CLOUDFLARE_ACCOUNT_ID  = <the id from step 2>
+#   4. Lock it PRIVATE FIRST — Cloudflare → Zero Trust → Access → Applications →
+#      Add an application → Self-hosted:
+#        Application domain: <PAGES_PROJECT>.pages.dev
+#        Policy: Action = Allow, Include = Emails (your team) or Emails ending
+#                in @your-domain. Save.  (Works before the project exists.)
+#   5. Only now install this file at .github/workflows/ and run it:
+#        gh workflow run board-cloudflare-pages.yml
+#      The run creates the Pages project and deploys the board — already behind
+#      Access.
+#
+# Pin PLUGIN_REPO/PLUGIN_REF below to the doperpowers checkout you trust. For
+# supply-chain safety prefer a release tag's immutable commit SHA over a movable
+# tag or `main` (this ref executes board-map.sh on the runner). A private plugin
+# repo needs a token with read access on the second checkout — the default
+# github.token only reads THIS repo (doperpowers itself is public).
+
+name: issue-board-pages
+
+on:
+  issues:
+    types: [opened, edited, deleted, transferred, closed, reopened, labeled, unlabeled]
+  schedule:
+    - cron: "23 */6 * * *"   # edge (sub-issue/dependency) changes emit no issues event
+  workflow_dispatch:
+
+concurrency:
+  group: issue-board-pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: read
+
+env:
+  PLUGIN_REPO: SSFSKIM/doperpowers
+  PLUGIN_REF: main            # ← pin to a release tag or its commit SHA you trust
+  PAGES_PROJECT: issue-board  # ← Cloudflare Pages project name (also the *.pages.dev host)
+
+jobs:
+  render-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # The board scripts anchor their render cache at a repo root, so check
+      # out the consumer repo even though the board itself lives on GitHub.
+      - uses: actions/checkout@v4
+
+      - name: Check out the issue-tracker toolkit
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.PLUGIN_REPO }}
+          ref: ${{ env.PLUGIN_REF }}
+          path: .board-plugin
+
+      - name: Render BOARD.html from the live issue board
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BOARD_REPO: ${{ github.repository }}
+        run: |
+          .board-plugin/skills/issue-tracker/scripts/board-map.sh --write
+          mkdir -p _site
+          cp doperpowers/issue-tracker/BOARD.html _site/index.html
+          cp doperpowers/issue-tracker/BOARD.md _site/BOARD.md
+
+      # wrangler creates the Pages project on first run (idempotent afterwards),
+      # then deploys the static board as the production deployment. Pinned to an
+      # exact version — this step carries the CF token, so it must not pull an
+      # arbitrary latest release at runtime. Bump deliberately after review.
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@3.114.17 pages project create "$PAGES_PROJECT" \
+            --production-branch=main 2>/dev/null || true
+          npx --yes wrangler@3.114.17 pages deploy _site \
+            --project-name="$PAGES_PROJECT" --branch=main

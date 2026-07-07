@@ -92,14 +92,24 @@ checkout's repo.
 | `board-lint.sh` | schema invariants over the live board: one status label per open issue, none on closed, notes where required, no dependency cycles. `FAIL … FIX: …` lines, exit 1 |
 | `board-migrate-gh.sh [--board FILE] [--apply]` | one-shot v6→v7 migration: push a legacy `board.json` into GitHub (dry-run by default) |
 
-## Remote board (GitHub Pages)
+## Remote board (hosted)
 
 `board-map.sh --write` renders locally on demand. For an always-current hosted
-view, copy `references/board-pages.yml` into the consumer repo's
-`.github/workflows/` and set Pages → Source to "GitHub Actions": every issue
-event (plus a cron safety net — sub-issue/dependency edits fire no webhook)
-re-renders BOARD.html on a runner and deploys it. Read the template's header
-first — on non-Enterprise plans a Pages site is public even for a private repo.
+view, a workflow re-renders BOARD.html on every issue event (plus a cron safety
+net — sub-issue/dependency edits fire no webhook) and deploys it. Two templates,
+pick by repo visibility:
+
+- **Public repo → GitHub Pages.** Copy `references/board-pages.yml` into
+  `.github/workflows/` and set Pages → Source to "GitHub Actions". Zero external
+  accounts. Note: a Pages site is *public* even for a private repo on
+  non-Enterprise plans — and on Free/most org plans, private-repo Pages is
+  unavailable entirely.
+- **Private repo → Cloudflare Pages + Access.** Copy
+  `references/board-cloudflare-pages.yml`. It deploys to Cloudflare Pages behind
+  Cloudflare Access, giving a **private, team-authenticated URL** (the only way
+  to host a private board below GitHub Enterprise). Read the template header:
+  set up Access *before* the first deploy, or there is a window where issue
+  titles are public.
 
 ## The dispatch loop
 

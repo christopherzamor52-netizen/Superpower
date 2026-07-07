@@ -99,9 +99,12 @@ check_template_wiring() {
     grep -q 'model_reasoning_effort' "$SDD_DIR/task-reviewer-prompt.md" \
         && pass "task-reviewer-prompt notes Codex model_reasoning_effort" \
         || fail "task-reviewer-prompt missing Codex effort note"
-    grep -qi 'effort' "$CODE_REVIEWER" \
-        && pass "code-reviewer template notes effort" \
-        || fail "code-reviewer template missing effort note"
+    grep -q 'Effort Selection' "$CODE_REVIEWER" \
+        && pass "code-reviewer template references Effort Selection" \
+        || fail "code-reviewer template missing Effort Selection reference"
+    grep -q 'model_reasoning_effort' "$CODE_REVIEWER" \
+        && pass "code-reviewer template notes Codex model_reasoning_effort" \
+        || fail "code-reviewer template missing Codex effort note"
 }
 
 main() {

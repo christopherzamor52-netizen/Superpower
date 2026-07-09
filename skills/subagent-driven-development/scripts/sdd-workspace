@@ -12,11 +12,24 @@
 # Single source of truth for the workspace location, so task-brief and
 # review-package cannot drift to different directories.
 #
+# When a harness provides a stable session id, scope the workspace under a
+# sanitized single path segment so concurrent sessions on the same checkout do
+# not overwrite each other's briefs, reports, diffs, or progress ledger.
+#
 # Usage: sdd-workspace
 set -euo pipefail
 
 root=$(git rev-parse --show-toplevel)
-dir="$root/.superpowers/sdd"
+session="${SUPERPOWERS_SDD_SESSION:-${CLAUDE_CODE_SESSION_ID:-}}"
+if [ -n "$session" ]; then
+  session=$(printf '%s' "$session" | LC_CTYPE=C tr -c 'A-Za-z0-9._-' '_')
+  case "$session" in
+    .|..) session="_$session" ;;
+  esac
+  dir="$root/.superpowers/sdd/$session"
+else
+  dir="$root/.superpowers/sdd"
+fi
 mkdir -p "$dir"
 printf '*\n' > "$dir/.gitignore"
 cd "$dir" && pwd

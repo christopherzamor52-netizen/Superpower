@@ -90,6 +90,24 @@ PLAN
             ;;
     esac
 
+    cat > "$repo/other-plan.md" <<'PLAN'
+# Other Plan
+
+## Task 1: Different first thing
+
+Do a different first thing.
+PLAN
+
+    local other_brief_out other_brief_path
+    other_brief_out="$(cd "$repo" && "$SDD_SCRIPTS/task-brief" other-plan.md 1)"
+    other_brief_path="$(printf '%s\n' "$other_brief_out" | sed -n 's/^wrote \(.*\): [0-9][0-9]* lines$/\1/p')"
+    if [[ "$other_brief_path" != "$brief_path" ]]; then
+        pass "task-brief namespaces default output by plan file"
+    else
+        fail "task-brief namespaces default output by plan file"
+        echo "    both wrote: $brief_path"
+    fi
+
     local git_id=(-c user.email=t@example.com -c user.name=t -c commit.gpgsign=false)
     ( cd "$repo" \
         && git add plan.md \

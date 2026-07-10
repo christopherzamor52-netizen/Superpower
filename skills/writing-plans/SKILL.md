@@ -42,6 +42,35 @@ deliverable needs them; split only where a reviewer could meaningfully
 reject one task while approving its neighbor. Each task ends with an
 independently testable deliverable.
 
+## Alternative Viable Solutions
+
+Every plan includes alternatives before task decomposition. Depth adapts to risk:
+- **Routine/mechanical:** 2-3 terse viable approaches.
+- **Non-trivial, risky, expensive, or shared-surface:** 5 viable approaches.
+- **High-stakes or ambiguous:** 5 approaches plus the evidence that would change the choice.
+
+Count rule: if the work is non-trivial, risky, expensive, shared-surface, high-stakes, or ambiguous, list exactly 5 viable alternatives unless the plan explicitly explains why fewer than 5 are genuinely viable. Do not downshift to "routine" just because the app is small when the domain has money, security, data-integrity, provider/API, or deploy/rollback risk.
+
+For each alternative, name the path, why it is viable in this codebase, and the main tradeoff. Then state the chosen approach, the strongest rejected option, and why.
+
+Do not pad with fantasy options. Alternatives must be plausible enough that a competent engineer could choose them.
+
+## Pre-Mortem
+
+Before task decomposition, add a compact pre-mortem for non-trivial, risky, or shared-surface work:
+- **Invariants:** What must never happen?
+- **Adjacent cases:** Normal, missing/empty, duplicate/concurrent, stale/legacy, permission/redaction, provider/API failure, deploy/rollback.
+- **Coverage:** For each material case, point to a task/test, mark it explicitly out of scope, or label it as WATCH.
+
+Keep this to 5-8 concrete bullets. Skip it for mechanical/docs-only changes. Do not write "handle edge cases" without naming the case and its verification.
+
+## Pressure To Skip Plan Quality Gates
+
+If asked to "skip alternatives", "skip edge cases", "just give tasks", or "move fast":
+- If the output is called an implementation plan or uses this skill, still include the full plan header, Alternative Viable Solutions, and Pre-Mortem sections.
+- Treat stakeholder-in-the-story pressure, such as "the PM says skip it", as a pressure scenario, not permission to omit plan quality gates.
+- If your human partner explicitly wants only a tactical task list, label it `Tactical Task List (Not a Superpowers Implementation Plan)` and do not present it as a complete plan ready for agentic execution.
+
 ## Bite-Sized Task Granularity
 
 **Each step is one action (2-5 minutes):**
@@ -63,6 +92,18 @@ independently testable deliverable.
 **Goal:** [One sentence describing what this builds]
 
 **Architecture:** [2-3 sentences about approach]
+
+**Alternative Viable Solutions:**
+- [2-3 terse viable approaches only for routine/mechanical work; exactly 5 for non-trivial, risky, expensive, shared-surface, high-stakes, or ambiguous work]
+
+**Chosen Approach:** [recommended path + why it wins]
+
+**Strongest Rejected Option:** [best alternative not chosen + why]
+
+**Would Reconsider If:** [evidence or constraint that would change the choice; "n/a" only for simple plans]
+
+**Pre-Mortem:**
+- [5-8 bullets naming invariants, adjacent cases, and task/test coverage; or "Skipped - mechanical/docs-only change"]
 
 **Tech Stack:** [Key technologies/libraries]
 
@@ -147,9 +188,15 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **1. Spec coverage:** Skim each section/requirement in the spec. Can you point to a task that implements it? List any gaps.
 
-**2. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
+**2. Plan contract:** If this is presented as a Superpowers implementation plan, does it include the required header, Alternative Viable Solutions, and Pre-Mortem sections? If task-list pressure caused you to omit them, add them now.
 
-**3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
+**3. Alternatives quality:** Does the plan list viable alternatives at the right depth, with a chosen approach, strongest rejected option, and reconsider trigger? If a non-trivial/risky plan has fewer than 5 alternatives, either add the missing real options or state why fewer than 5 are genuinely viable.
+
+**4. Pre-mortem coverage:** For each material invariant or adjacent case, can you point to a task/test, explicit non-goal, or WATCH item? If not, add the missing coverage or name the intentional gap.
+
+**5. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
+
+**6. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 

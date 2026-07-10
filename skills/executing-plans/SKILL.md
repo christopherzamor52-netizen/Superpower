@@ -18,6 +18,10 @@ Load plan, review critically, execute all tasks, report when complete.
 ### Step 1: Load and Review Plan
 1. Read plan file
 2. Review critically - identify any questions or concerns about the plan
+   - Do not execute a task-only list as a Superpowers implementation plan for non-trivial work. A ready plan has the required header, alternatives, pre-mortem, files, tests, and verification steps.
+   - Check whether the plan lists alternative viable solutions at risk-appropriate depth, with exactly 5 alternatives for non-trivial/risky work unless fewer are explicitly justified, plus a chosen path and strongest rejected option. For legacy plans without this section, raise it only if the work is non-trivial or the approach is unclear.
+   - For non-trivial/risky work, check whether the plan names material invariants and adjacent cases, and maps each to a task/test, explicit non-goal, or WATCH item.
+   - Do not accept vague "handle edge cases" language without the case and verification.
 3. If concerns: Raise them with your human partner before starting
 4. If no concerns: Create todos for the plan items and proceed
 

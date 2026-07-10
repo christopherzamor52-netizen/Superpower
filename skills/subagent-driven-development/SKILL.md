@@ -89,6 +89,14 @@ Before dispatching Task 1, scan the plan once for conflicts:
 - tasks that contradict each other or the plan's Global Constraints
 - anything the plan explicitly mandates that the review rubric treats as a
   defect (a test that asserts nothing, verbatim duplication of a logic block)
+- for non-trivial work, a task-only list presented as a Superpowers
+  implementation plan, or a plan missing the required header, alternatives,
+  pre-mortem, files, tests, or verification steps
+- alternatives that are missing, perfunctory, or fewer than 5 for
+  non-trivial/risky work unless fewer are explicitly justified
+- pre-mortem entries that use vague "handle edge cases" language instead of
+  naming material invariants/adjacent cases and mapping them to a task/test,
+  explicit non-goal, or WATCH item
 
 Present everything you find to your human partner as one batched question —
 each finding beside the plan text that mandates it, asking which governs —

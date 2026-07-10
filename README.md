@@ -222,6 +222,7 @@ The Pi package loads the Superpowers skills and a small extension that injects t
 ### Skills Library
 
 **Testing**
+- **agentic-end-to-end-testing** - Prove a running app works through its real interface, with evidence that can't be faked
 - **test-driven-development** - RED-GREEN-REFACTOR cycle (includes testing anti-patterns reference)
 
 **Debugging**

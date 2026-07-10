@@ -63,6 +63,7 @@ digraph process {
     "Read plan, note context and global constraints, create todos" [shape=box];
     "More tasks remain?" [shape=diamond];
     "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [shape=box];
+    "Offer spec-derived e2e verification (./spec-derived-e2e.md)" [shape=box];
     "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
     "Read plan, note context and global constraints, create todos" -> "Dispatch implementer subagent (./implementer-prompt.md)";
@@ -78,7 +79,8 @@ digraph process {
     "Mark task complete in todo list and progress ledger" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [label="no"];
-    "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Use superpowers:finishing-a-development-branch";
+    "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Offer spec-derived e2e verification (./spec-derived-e2e.md)";
+    "Offer spec-derived e2e verification (./spec-derived-e2e.md)" -> "Use superpowers:finishing-a-development-branch";
 }
 ```
 
@@ -263,6 +265,16 @@ a ledger file, not only in todos.
 - `git clean -fdx` will destroy the ledger (it's git-ignored scratch); if
   that happens, recover from `git log`.
 
+## Before Finishing: Offer E2E Verification
+
+After the final whole-branch review passes and before
+superpowers:finishing-a-development-branch, offer your human partner
+spec-derived e2e verification: scenario cards derived from the governing
+spec, run live against the built branch. If they accept — or asked for
+end-to-end verification earlier — follow
+[spec-derived-e2e.md](spec-derived-e2e.md). If they decline, proceed to
+finishing.
+
 ## Prompt Templates
 
 - [implementer-prompt.md](implementer-prompt.md) - Dispatch implementer subagent
@@ -409,6 +421,7 @@ Done!
 - **superpowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
 - **superpowers:writing-plans** - Creates the plan this skill executes
 - **superpowers:requesting-code-review** - Code review template for the final whole-branch review
+- **superpowers:agentic-end-to-end-testing** - Spec-derived e2e verification, offered before finishing (see [spec-derived-e2e.md](spec-derived-e2e.md))
 - **superpowers:finishing-a-development-branch** - Complete development after all tasks
 
 **Subagents should use:**

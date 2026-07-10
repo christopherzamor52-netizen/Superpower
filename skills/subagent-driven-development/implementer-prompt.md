@@ -31,11 +31,19 @@ Subagent (general-purpose):
 
     ## Your Job
 
+    Your task gives you a **contract, not the code**: exact interfaces, a
+    behavior contract, test scenarios, and acceptance criteria. You design and
+    write the implementation yourself via TDD — the plan tells you WHAT to build
+    and how to verify it, not HOW to write it. (Code appears in a task only
+    under "Implementation notes", where ambiguity would be costly — treat that
+    as a given to honor, not a suggestion.)
+
     Once you're clear on requirements:
-    1. Implement exactly what the task specifies
-    2. Write tests (following TDD if task says to)
-    3. Verify implementation works
-    4. Commit your work
+    1. Write the tests that cover the task's test scenarios, and watch them fail (RED)
+    2. Design and implement the code so the tests pass and the behavior contract holds (GREEN); match the Interfaces signatures exactly
+    3. Verify all scenarios are covered and green; refactor while keeping them green
+    4. Stage your work (`git add` the files you changed) and prepare a suggested
+       commit message — do NOT run `git commit`; your human partner makes the commits
     5. Self-review (see below)
     6. Report back
 
@@ -45,7 +53,7 @@ Subagent (general-purpose):
     It's always OK to pause and clarify. Don't guess or make assumptions.
 
     While iterating, run the focused test for what you're changing; run the
-    full suite once before committing, not after every edit.
+    full suite once before staging, not after every edit.
 
     ## Code Organization
 
@@ -119,13 +127,14 @@ Subagent (general-purpose):
       - RED: command run, relevant failing output before implementation, and why the failure was expected
       - GREEN: command run and relevant passing output after implementation
     - Files changed
+    - Suggested commit message(s) (subject + body) and the files you staged
     - Self-review findings (if any)
     - Any issues or concerns
 
     Then report back with ONLY (under 15 lines — the detail lives in the
     report file):
     - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
-    - Commits created (short SHA + subject)
+    - Suggested commit (subject line + files staged) — you did not commit; the controller presents it to the human partner
     - One-line test summary (e.g. "14/14 passing, output pristine")
     - Your concerns, if any
     - The report file path

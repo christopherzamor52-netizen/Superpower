@@ -107,7 +107,7 @@ Full workflow execution test (~10-30 minutes):
   - Spec reviewer reads code independently
   - Working implementation is produced
   - Tests pass
-  - Proper git commits created
+  - Agent creates no commits (commit policy: stage and suggest, human commits)
 
 **What it tests:**
 - The workflow actually works end-to-end

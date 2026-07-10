@@ -5,8 +5,9 @@
 # Drill coverage: evals/scenarios/sdd-rejects-extra-features.yaml covers the
 # YAGNI enforcement subset (forbidden exports + reviewer-as-gate semantics)
 # and is stricter on that axis. This bash test additionally asserts:
-#   - >=3 git commits (initial + per-task commits, exercising SDD's
-#     commit-per-task workflow shape)
+#   - exactly 1 git commit (the initial fixture commit): under the commit
+#     policy the agent stages and suggests commits but never creates them —
+#     the human partner does, and there is no human in this headless run
 #   - >=2 Claude Code subagent dispatches via Agent or Task (drill only asserts >=1)
 #   - Claude Code task-tracking tool usage (drill makes no assertion)
 #   - test/math.test.js exists (drill relies on `npm test` succeeding)
@@ -275,13 +276,13 @@ else
 fi
 echo ""
 
-# Test 7: Git commits show proper workflow
-echo "Test 7: Git commit history..."
+# Test 7: Agent must not create commits (commit policy: suggest, never commit)
+echo "Test 7: Git commit history (agent must not commit)..."
 commit_count=$(git -C "$TEST_PROJECT" log --oneline | wc -l)
-if [ "$commit_count" -gt 2 ]; then  # Initial + at least 2 task commits
-    echo "  [PASS] Multiple commits created ($commit_count total)"
+if [ "$commit_count" -eq 1 ]; then  # Only the initial fixture commit
+    echo "  [PASS] Agent created no commits ($commit_count total — only the initial); commits left to the human partner"
 else
-    echo "  [FAIL] Too few commits ($commit_count, expected >2)"
+    echo "  [FAIL] Agent created commits ($commit_count total, expected 1 — the agent must only stage and suggest commits)"
     FAILED=$((FAILED + 1))
 fi
 echo ""

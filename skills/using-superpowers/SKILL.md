@@ -23,6 +23,22 @@ This is not negotiable. You cannot rationalize your way out of this.
 
 Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it has a checklist, create a todo per item.
 
+## Commit Policy (suggest, never commit)
+
+<EXTREMELY-IMPORTANT>
+You and any subagents you dispatch NEVER create commits — no `git commit` and no `git commit --amend`. Your human partner makes every commit themselves.
+
+Whenever a skill's step would create a commit:
+1. Do the work and stage the relevant files with `git add <specific paths>` (staging is allowed — it only prepares the commit).
+2. Present the exact suggested commit command and message for your human partner to run, e.g.:
+   `git commit -m "feat: add specific feature"`
+3. Let them run it. Do not run it for them, and do not offer to "just commit it this once."
+
+This overrides any commit instruction in any other skill. Where a skill says "commit", read it as "stage the work and suggest the commit for your human partner to make."
+
+Integration actions that write history in other ways (merge, push, opening a PR) happen ONLY through the finishing-a-development-branch skill, and ONLY when your human partner explicitly picks that option. Never merge or push on your own initiative.
+</EXTREMELY-IMPORTANT>
+
 ## Skill Priority
 
 When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. Brainstorming and systematic-debugging are Superpowers' most common process skills, but the rule holds for any of them.

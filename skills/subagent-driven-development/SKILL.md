@@ -11,10 +11,12 @@ Execute plan by dispatching a fresh implementer subagent per task, a task review
 
 **Core principle:** Fresh subagent per task + task review (spec + quality) + broad final review = high quality, fast iteration
 
+**Commit policy:** Neither you nor any subagent runs `git commit`. The implementer stages its work and reports a suggested commit message; at each task checkpoint you present that suggestion to your human partner, who makes the commit. Review runs on that commit (see Handling Implementer Status → DONE).
+
 **Narration:** between tool calls, narrate at most one short line — the
 ledger and the tool results carry the record.
 
-**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
+**Continuous execution:** Do not pause to check in with your human partner between tasks, except at the per-task commit gate. Execute all tasks from the plan without stopping. The only reasons to stop are: presenting the suggested commit for your human partner to make at each task checkpoint, BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it. The commit gate is the one sanctioned pause: keep it tight (present the staged files and the suggested commit command, wait for the commit, move on).
 
 ## When to Use
 
@@ -53,7 +55,8 @@ digraph process {
         "Dispatch implementer subagent (./implementer-prompt.md)" [shape=box];
         "Implementer subagent asks questions?" [shape=diamond];
         "Answer questions, provide context" [shape=box];
-        "Implementer subagent implements, tests, commits, self-reviews" [shape=box];
+        "Implementer subagent implements, tests, stages, self-reviews" [shape=box];
+        "Present suggested commit; human partner commits" [shape=box];
         "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" [shape=box];
         "Task reviewer reports spec ✅ and quality approved?" [shape=diamond];
         "Dispatch fix subagent for Critical/Important findings" [shape=box];
@@ -69,8 +72,9 @@ digraph process {
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-    "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, commits, self-reviews" [label="no"];
-    "Implementer subagent implements, tests, commits, self-reviews" -> "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)";
+    "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, stages, self-reviews" [label="no"];
+    "Implementer subagent implements, tests, stages, self-reviews" -> "Present suggested commit; human partner commits";
+    "Present suggested commit; human partner commits" -> "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)";
     "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" -> "Task reviewer reports spec ✅ and quality approved?";
     "Task reviewer reports spec ✅ and quality approved?" -> "Dispatch fix subagent for Critical/Important findings" [label="no"];
     "Dispatch fix subagent for Critical/Important findings" -> "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" [label="re-review"];
@@ -100,7 +104,7 @@ conflicts that only emerge from implementation.
 
 Use the least powerful model that can handle each role to conserve cost and increase speed.
 
-**Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
+**Small, well-specified tasks** (isolated unit, tight contract with explicit test scenarios, 1-2 files): use a fast, cheap model. Implementing a small unit via TDD from an exact contract is low-risk work.
 
 **Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
 
@@ -118,14 +122,16 @@ most expensive — which silently defeats this section.
 
 **Turn count beats token price.** Wall-clock and context cost scale with how
 many turns a subagent takes, and the cheapest models routinely take 2-3× the
-turns on multi-step work — costing more overall. Use a mid-tier model as the
-floor for reviewers and for implementers working from prose descriptions.
-When the task's plan text contains the complete code to write, the
-implementation is transcription plus testing: use the cheapest tier for
-that implementer. Single-file mechanical fixes also take the cheapest tier.
+turns on multi-step work — costing more overall. Plans specify **contracts, not
+finished code**: the implementer designs the implementation via TDD from the
+task's behavior contract and test scenarios, which takes real reasoning. Use a
+mid-tier model as the floor for implementers and reviewers. Reserve the cheapest
+tier for genuinely trivial single-file mechanical fixes. Reach for a more
+capable model when a task's contract involves design judgment or spans several
+interacting files.
 
 **Task complexity signals (implementation tasks):**
-- Touches 1-2 files with a complete spec → cheap model
+- Touches 1-2 files with a tight, complete contract → cheap model
 - Touches multiple files with integration concerns → standard model
 - Requires design judgment or broad codebase understanding → most capable model
 
@@ -133,7 +139,7 @@ that implementer. Single-file mechanical fixes also take the cheapest tier.
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Generate the review package (`scripts/review-package BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
+**DONE:** The implementer has staged its work and reported a suggested commit message — it did not commit. Present that suggested commit (staged files + message) to your human partner and wait for them to make the commit; you never run `git commit` yourself. Once they've committed, record the new HEAD, then generate the review package (`scripts/review-package BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
@@ -206,11 +212,14 @@ final whole-branch review. When you fill a reviewer template:
   printed path in the final review dispatch, so the final reviewer reads
   one file instead of re-deriving the branch diff with git commands.
 - Every fix dispatch carries the implementer contract: the fix subagent
-  re-runs the tests covering its change and reports the results. Name the
+  re-runs the tests covering its change and reports the results, and stages
+  its work with a suggested commit rather than committing. Name the
   covering test files in the dispatch — a one-line fix does not need the
   whole suite. Before re-dispatching the reviewer, confirm the fix report
-  contains the covering tests, the command run, and the output; dispatch
-  the re-review once all three are present.
+  contains the covering tests, the command run, and the output, then
+  present the suggested commit for your human partner to make (so the
+  review package has a commit to diff); dispatch the re-review once the fix
+  is committed.
 - If the final whole-branch review returns findings, dispatch ONE fix
   subagent with the complete findings list — not one fixer per finding.
   Per-finding fixers each rebuild context and re-run suites; a real
@@ -290,8 +299,9 @@ Implementer: "Got it. Implementing now..."
   - Implemented install-hook command
   - Added tests, 5/5 passing
   - Self-review: Found I missed --force flag, added it
-  - Committed
+  - Staged the work; suggested commit: "feat: add install-hook command"
 
+[Present suggested commit; human partner commits]
 [Run review-package, dispatch task reviewer with the printed path]
 Task reviewer: Spec ✅ - all requirements met, nothing extra.
   Strengths: Good test coverage, clean. Issues: None. Task quality: Approved.
@@ -307,8 +317,9 @@ Implementer:
   - Added verify/repair modes
   - 8/8 tests passing
   - Self-review: All good
-  - Committed
+  - Staged the work; suggested commit: "feat: add verify/repair modes"
 
+[Present suggested commit; human partner commits]
 [Run review-package, dispatch task reviewer with the printed path]
 Task reviewer: Spec ❌:
   - Missing: Progress reporting (spec says "report every 100 items")
@@ -367,6 +378,7 @@ Done!
 ## Red Flags
 
 **Never:**
+- Run `git commit` yourself (or let a subagent do it) — stage the work, suggest the commit, and let your human partner make it
 - Start implementation on main/master branch without explicit user consent
 - Skip task review, or accept a report missing either verdict (spec compliance AND task quality are both required)
 - Proceed with unfixed issues

@@ -119,6 +119,27 @@ You MUST complete each phase before proceeding to the next.
    - Keep tracing up until you find the source
    - Fix at source, not at symptom
 
+6. **Check for Self-Ingested Output (agent/LLM pipelines)**
+
+   **WHEN debugging a multi-turn agent or LLM pipeline that reaches "impossible" state:**
+
+   The system's OWN prior output can loop back as input. A generated reply, a
+   status line, or a cached summary from an earlier turn gets re-read by a
+   downstream stage and fabricates state the user never supplied.
+
+   - Ask what each stage actually READS, not just what the user sent
+   - Check whether any of that text was produced by the system itself on a prior turn or pass
+   - Trace the provenance of the exact string the failing stage matched on
+
+   **Example:** A fact-extractor scans the last few assistant turns. A composer's
+   stock closing line ("…try a different budget or dates") lands there, matches
+   "budget," and fabricates a phantom missing-budget gate that pre-empts the real
+   request. The defect is in what the stage READS, not in the feature the symptom
+   named.
+
+   **This reveals:** self-ingested output — a common, invisible source of
+   "impossible" state.
+
 ### Phase 2: Pattern Analysis
 
 **Find the pattern before fixing:**
@@ -224,6 +245,7 @@ If you catch yourself thinking:
 - "Pattern says X but I'll adapt it differently"
 - "Here are the main problems: [lists fixes without investigation]"
 - Proposing solutions before tracing data flow
+- "The symptom points at feature X, so the bug is in X" - before checking what each stage actually reads
 - **"One more fix attempt" (when already tried 2+)**
 - **Each fix reveals new problem in different place**
 

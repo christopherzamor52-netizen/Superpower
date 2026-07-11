@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
-# Resolve and ensure the working-tree directory SDD uses for its short-lived
-# artifacts: task briefs, implementer reports, review packages, and the
-# progress ledger. Print the directory's absolute path.
+# Resolve and ensure the per-branch working-tree directory SDD uses for its
+# short-lived artifacts: task briefs, implementer reports, and review packages.
+# Print the directory's absolute path. The directory is
+# <repo-root>/.superpowers/sdd/<branch> (branch name with '/' -> '-'), so
+# artifacts from different branches never collide; a detached HEAD (or no
+# branch) falls back to the .superpowers/sdd root.
+#
+# NOTE: the cross-branch progress ledger lives at the sdd ROOT
+# (<repo-root>/.superpowers/sdd/progress.md), not in this per-branch dir — it is
+# a single index namespaced by per-branch headers.
 #
 # The workspace lives in the working tree (not under .git/) because Claude Code
 # treats .git/ as a protected path and denies agent writes there — which blocks
-# an implementer subagent from writing its report file. A self-ignoring
-# .gitignore keeps the workspace out of `git status` and out of accidental
-# commits without modifying any tracked file.
+# an implementer subagent from writing its report file. One self-ignoring
+# .gitignore at the sdd root keeps the whole tree — including the per-branch
+# subdirectories — out of `git status` and out of accidental commits without
+# modifying any tracked file.
 #
 # Single source of truth for the workspace location, so task-brief and
 # review-package cannot drift to different directories.
@@ -16,7 +24,15 @@
 set -euo pipefail
 
 root=$(git rev-parse --show-toplevel)
-dir="$root/.superpowers/sdd"
+base="$root/.superpowers/sdd"
+mkdir -p "$base"
+printf '*\n' > "$base/.gitignore"
+
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/' '-')
+if [ -n "$branch" ] && [ "$branch" != "HEAD" ]; then
+  dir="$base/$branch"
+else
+  dir="$base"
+fi
 mkdir -p "$dir"
-printf '*\n' > "$dir/.gitignore"
 cd "$dir" && pwd

@@ -223,8 +223,11 @@ prints back — stays resident in your context for the rest of the session
 and is re-read on every later turn. Hand artifacts over as files:
 
 - **Task brief:** before dispatching an implementer, run this skill's
-  `scripts/task-brief PLAN_FILE N` — it extracts the task's full text to a
-  uniquely named file and prints the path. Compose the dispatch so the
+  `scripts/task-brief PLAN_FILE N` — it extracts the task's full text to
+  `.superpowers/sdd/<branch>/task-N-brief.md` (a per-branch subdirectory, `/`
+  in the branch replaced by `-`, so briefs from different branches never
+  collide) and prints the path. Always use the printed path, not a hand-built
+  name. Compose the dispatch so the
   brief stays the single source of requirements. Your dispatch should
   contain: (1) one line on where this task fits in the project; (2) the
   brief path, introduced as "read this first — it is your requirements,
@@ -234,7 +237,8 @@ and is re-read on every later turn. Hand artifacts over as files:
   report contract. Exact values (numbers, magic strings, signatures, test
   cases) appear only in the brief.
 - **Report file:** name the implementer's report file after the brief
-  (brief `…/task-N-brief.md` → report `…/task-N-report.md`) and put it in
+  (brief `…/<branch>/task-N-brief.md` → report `…/<branch>/task-N-report.md`,
+  in the same per-branch subdirectory) and put it in
   the dispatch prompt. The implementer writes the full report there and
   returns only status, commits, a one-line test summary, and concerns.
 - **Reviewer inputs:** the task reviewer gets three paths — the same brief

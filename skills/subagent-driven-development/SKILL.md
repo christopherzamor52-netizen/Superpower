@@ -215,6 +215,8 @@ final whole-branch review. When you fill a reviewer template:
   subagent with the complete findings list — not one fixer per finding.
   Per-finding fixers each rebuild context and re-run suites; a real
   session's final-review fix wave cost more than all its tasks combined.
+- Release the final whole-branch reviewer, and any fixer it triggered, once
+  you have acted on its findings and will send them no further input.
 
 ## File Handoffs
 
@@ -257,6 +259,11 @@ a ledger file, not only in todos.
 - When a task's review comes back clean, append one line to the ledger in
   the same message as your other bookkeeping:
   `Task N: complete (commits <base7>..<head7>, review clean)`.
+  That bookkeeping includes releasing the subagents the task used —
+  implementer, task reviewer, and any fix subagents — you will send none
+  of them further input. On some harnesses a finished agent holds its slot
+  until closed (see the per-platform tool refs in
+  `../using-superpowers/references/`).
 - The ledger is your recovery map: the commits it names exist in git even
   when your context no longer remembers creating them. After compaction,
   trust the ledger and `git log` over your own recollection.
@@ -387,6 +394,10 @@ Done!
 - Move to next task while the review has open Critical/Important issues
 - Re-dispatch a task the progress ledger already marks complete — check
   the ledger (and `git log`) after any compaction or resume
+- Leave subagents open once you are finished with them — release a task's
+  implementer, reviewer and fixers at task close-out, and the final
+  whole-branch reviewer once you have acted on its findings; you will send
+  none of them further input
 
 **If subagent asks questions:**
 - Answer clearly and completely

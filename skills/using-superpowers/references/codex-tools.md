@@ -9,6 +9,16 @@ multi_agent = true
 
 This enables `spawn_agent`, `wait_agent`, and `close_agent` for skills like `dispatching-parallel-agents` and `subagent-driven-development`. When using subagent-driven-development, you should always close implementer and reviewer subagents when they have finished all their work.
 
+## Coordination Semantics
+
+- A `wait_agent` timeout means no mailbox update or final-status notification
+  arrived during that wait. It does not mean the subagent is blocked or idle.
+- `send_message` queues context without requesting a new turn. When an answer
+  is required, use `followup_task`, which triggers a turn if the target is idle.
+- Child tool activity is not necessarily visible as a parent mailbox update,
+  and a lack of new files is not a liveness signal. Do not interrupt or split a
+  task based only on timeouts, queue-only silence, or an unchanged worktree.
+
 ## Environment Detection
 
 Skills that create worktrees or finish branches should detect their

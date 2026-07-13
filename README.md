@@ -11,7 +11,7 @@ If this sounds like someone you know, definitely send them our way.
 
 ## Quickstart
 
-Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [Gemini CLI](#gemini-cli), [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
+Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [CodeBuddy](#codebuddy), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [Gemini CLI](#gemini-cli), [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
 
 ## How it works
 
@@ -71,6 +71,30 @@ agy plugin install https://github.com/obra/superpowers
 
 Antigravity runs the plugin's session-start hook, so Superpowers is active from
 the first message. Reinstall with the same command to update.
+
+### CodeBuddy
+
+CodeBuddy is compatible with the Claude Code plugin format, so Superpowers works with no additional configuration.
+
+- Register the marketplace:
+
+  ```bash
+  codebuddy plugin marketplace add https://github.com/obra/superpowers
+  ```
+
+- Install the plugin:
+
+  ```bash
+  codebuddy plugin install superpowers@superpowers-dev
+  ```
+
+- Or load it temporarily from a local directory for development:
+
+  ```bash
+  codebuddy --plugin-dir /path/to/superpowers
+  ```
+
+CodeBuddy runs the plugin's session-start hook and auto-discovers skills from the `skills/` directory, so Superpowers is active from the first message. Reinstall with the same command to update.
 
 ### Codex App
 

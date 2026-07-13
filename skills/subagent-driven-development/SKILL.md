@@ -133,6 +133,13 @@ that implementer. Single-file mechanical fixes also take the cheapest tier.
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
+These statuses are reports, not controller inferences. Enter the
+`NEEDS_CONTEXT` or `BLOCKED` branch only after the implementer reports that
+status or a runtime error prevents progress. A coordination timeout, silence
+after a queue-only message, or a lack of new files does not establish either
+status. On Codex, use `followup_task` when an immediate answer is required; see
+[Codex coordination semantics](../using-superpowers/references/codex-tools.md#coordination-semantics).
+
 **DONE:** Generate the review package (`scripts/review-package BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.

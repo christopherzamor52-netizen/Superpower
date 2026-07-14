@@ -11,7 +11,7 @@ If this sounds like someone you know, definitely send them our way.
 
 ## Quickstart
 
-Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [Gemini CLI](#gemini-cli), [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
+Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [Gemini CLI](#gemini-cli), [GitHub Copilot CLI](#github-copilot-cli), [Hermes Agent](#hermes-agent), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
 
 ## How it works
 
@@ -149,6 +149,34 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
   ```bash
   copilot plugin install superpowers@superpowers-marketplace
   ```
+
+### Hermes Agent
+
+Install Superpowers as a Hermes plugin from this repository:
+
+```bash
+hermes plugins install https://github.com/obra/superpowers
+```
+
+Restart Hermes after installation so the plugin is loaded.
+
+Verify the install:
+
+```bash
+hermes plugins list
+```
+
+You should see the `superpowers` plugin listed. In a new Hermes session, the
+acceptance-test prompt `Let's make a react todo list` should trigger
+`superpowers:brainstorming` before any code is written. To update or remove the
+plugin later:
+
+```bash
+hermes plugins update superpowers
+hermes plugins remove superpowers
+```
+
+Detailed docs: [docs/README.hermes.md](docs/README.hermes.md).
 
 ### Kimi Code
 

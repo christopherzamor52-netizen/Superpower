@@ -1,0 +1,7 @@
+name: superpowers
+version: 6.1.1
+description: Superpowers skills and runtime bootstrap for Hermes Agent coding sessions
+author: Jesse Vincent
+license: MIT
+provides_hooks:
+  - pre_llm_call

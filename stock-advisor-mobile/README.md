@@ -71,6 +71,54 @@ By default the app talks to `http://localhost:4000`; override with
 `EXPO_PUBLIC_CHART_VISION_API_URL` (e.g. when testing on a physical device,
 which can't reach your machine's `localhost`, or against a deployed backend).
 
+## Building a real, installable app (EAS Build)
+
+`npm run web` / `ios` / `android` above run a **dev server** — great for
+iterating, but not something you install and keep. To get an actual app
+file, use Expo's cloud build service, EAS. This needs an Expo account and,
+for iOS on a real device, a paid Apple Developer account — there's no way
+around that requirement, it's Apple's, not Expo's.
+
+**One-time setup:**
+
+```bash
+npm install -g eas-cli      # or use `npx eas-cli` for every command below
+eas login                   # free account at https://expo.dev/signup if you don't have one
+eas init                    # links this project to your account (writes a projectId into app.json)
+```
+
+**Android APK — no Apple account needed, installs on any Android phone:**
+
+```bash
+eas build --platform android --profile preview
+```
+
+This queues a build on Expo's servers (free tier; may sit in a short queue)
+and gives you a URL when it's done. Download the `.apk` on your phone and
+open it — Android will ask you to allow "install unknown apps" for that
+source the first time.
+
+**iOS on the Simulator — Mac + Xcode only, still no Apple account:**
+
+```bash
+eas build --platform ios --profile preview-ios-simulator
+```
+
+Produces a simulator build you can drag into the iOS Simulator. Not
+installable on a real iPhone.
+
+**iOS on a real iPhone — requires the Apple Developer Program ($99/year):**
+
+1. Enroll at [developer.apple.com/programs](https://developer.apple.com/programs/).
+2. Run `eas build --platform ios --profile preview`. The CLI will
+   interactively walk you through Apple sign-in, ad-hoc provisioning, and
+   registering your device's UDID (or use TestFlight instead — `eas submit`
+   after a `production` build, if you'd rather distribute that way).
+
+None of the iOS account/provisioning steps can be done non-interactively —
+they involve your own Apple ID login (with 2FA) and device registration, so
+run these yourself from your own machine.
+
 ## How it works
 
 1. **Watchlist screen** (`src/screens/WatchlistScreen.tsx`) — a curated

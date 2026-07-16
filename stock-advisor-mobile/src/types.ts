@@ -37,3 +37,19 @@ export interface Indicators {
   macdHistogram: (number | null)[]
   rsi14: (number | null)[]
 }
+
+export type ChartTrend = 'uptrend' | 'downtrend' | 'sideways' | 'unclear'
+
+export interface ChartAnalysis {
+  readableTicker: string | null
+  timeframe: string | null
+  trend: ChartTrend
+  observations: string[]
+  summary: string
+  confidence: 'low' | 'medium' | 'high'
+}
+
+export interface ChartAnalysisResponse {
+  source: 'live' | 'mock'
+  analysis: ChartAnalysis
+}

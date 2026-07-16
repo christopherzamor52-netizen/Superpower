@@ -14,12 +14,22 @@ the same kind of heuristic covered in any intro technical-analysis
 article, not a predictive model. See `src/lib/signal.ts` for the exact,
 fully transparent logic — there is no hidden scoring.
 
+Also includes a **"Scan a chart"** screen: take a photo or upload a
+screenshot of any chart, and an AI vision model (Claude) gives a plain-
+language reading of what it shows (trend, notable patterns, a summary) —
+separate from, and clearly labeled apart from, the rule-based signal above.
+This needs the companion `../chart-vision-service` backend running (see its
+own README) — it is not optional infrastructure, since an API key can't
+safely live in the app itself.
+
 ## Stack
 
 - Expo + React Native + TypeScript
 - `react-native-svg` for hand-rolled charts (price/SMA overlay, RSI, MACD) —
   no heavyweight charting library needed
-- No backend, no auth, no persistence beyond in-memory state
+- `expo-image-picker` for the chart-scanning camera/library flow
+- No auth, no persistence beyond in-memory state; the only backend is the
+  small `chart-vision-service` proxy used by the chart-scanning feature
 
 ## Data source
 
@@ -49,6 +59,18 @@ npm run ios    # requires macOS + Xcode
 npm run android
 ```
 
+To use "Scan a chart", also run the backend in a second terminal:
+
+```bash
+cd ../chart-vision-service
+npm install
+npm run dev   # runs in mock mode unless you set ANTHROPIC_API_KEY (see its README)
+```
+
+By default the app talks to `http://localhost:4000`; override with
+`EXPO_PUBLIC_CHART_VISION_API_URL` (e.g. when testing on a physical device,
+which can't reach your machine's `localhost`, or against a deployed backend).
+
 ## How it works
 
 1. **Watchlist screen** (`src/screens/WatchlistScreen.tsx`) — a curated
@@ -66,6 +88,11 @@ npm run android
 4. **Detail screen** (`src/screens/StockDetailScreen.tsx`) — price chart
    with moving averages, RSI chart with 30/70 reference lines, MACD
    histogram, and the signal checklist, all built on `react-native-svg`.
+5. **Scan a chart** (`src/screens/ChartScanScreen.tsx`) — pick or photograph
+   a chart image, send it to `chart-vision-service`, and display the
+   returned trend/observations/summary. This is a separate, AI-generated
+   interpretation of an image — not the same thing as the deterministic
+   signal engine above, and it's labeled as such in the UI.
 
 ## Limitations / next steps
 

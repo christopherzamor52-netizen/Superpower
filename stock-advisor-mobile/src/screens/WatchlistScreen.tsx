@@ -1,10 +1,16 @@
 import { useState } from 'react'
-import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native'
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { WatchlistRow } from '../components/WatchlistRow'
 import { DEFAULT_WATCHLIST } from '../data/watchlist'
 import type { WatchlistTicker } from '../types'
 
-export function WatchlistScreen({ onSelect }: { onSelect: (symbol: string) => void }) {
+export function WatchlistScreen({
+  onSelect,
+  onScanChart,
+}: {
+  onSelect: (symbol: string) => void
+  onScanChart: () => void
+}) {
   const [custom, setCustom] = useState<WatchlistTicker[]>([])
   const [query, setQuery] = useState('')
 
@@ -25,8 +31,15 @@ export function WatchlistScreen({ onSelect }: { onSelect: (symbol: string) => vo
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Stock Advisor</Text>
-        <Text style={styles.subtitle}>Educational technical-analysis signals, not financial advice</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.headerText}>
+            <Text style={styles.title}>Stock Advisor</Text>
+            <Text style={styles.subtitle}>Educational technical-analysis signals, not financial advice</Text>
+          </View>
+          <Pressable style={styles.scanButton} onPress={onScanChart}>
+            <Text style={styles.scanButtonText}>📷 Scan a chart</Text>
+          </Pressable>
+        </View>
       </View>
 
       <TextInput
@@ -55,8 +68,18 @@ export function WatchlistScreen({ onSelect }: { onSelect: (symbol: string) => vo
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   header: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
+  headerRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 },
+  headerText: { flex: 1 },
   title: { fontSize: 22, fontWeight: '700', color: '#0f172a' },
   subtitle: { fontSize: 12, color: '#64748b', marginTop: 4 },
+  scanButton: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  scanButtonText: { fontSize: 12, fontWeight: '600', color: '#334155' },
   input: {
     marginHorizontal: 16,
     marginBottom: 8,
